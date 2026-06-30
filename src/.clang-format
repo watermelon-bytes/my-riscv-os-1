@@ -5,3 +5,4 @@ AccessModifierOffset: -4
 PointerAlignment: Left 
 AlignTrailingComments: true
 BreakAfterAttributes: Always
+SortIncludes: Never
