@@ -1,9 +1,8 @@
 *.iso
-*build/*
-libfdt/build/*
+build/*
 compile_commands.json
 *.vim
-.cache/*
+.cache/
 
 # Prerequisites
 *.d
