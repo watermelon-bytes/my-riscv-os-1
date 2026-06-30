@@ -1,30 +1,44 @@
+
 #include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
 
-void* memcpy(void* __restrict dest, const void* __restrict src, size_t n) {
+// relying on __builtin_'s may look like a weakness
+// but it also may be a good time saving and code reusing
+
+__attribute__((always_inline)) void* memcpy(void* __restrict dest,
+                                            const void* __restrict src,
+                                            size_t n) {
     return __builtin_memcpy(dest, src, n);
 }
 
-void* memset(void* s, int c, size_t n) { return __builtin_memset(s, c, n); }
-
-void* memmove(void* dest, const void* src, size_t n) {
+__attribute__((always_inline)) void* memset(void* s, int c, size_t n) {
+    return __builtin_memset(s, c, n);
+}
+__attribute__((always_inline)) void* memmove(void* dest, const void* src,
+                                             size_t n) {
     return __builtin_memmove(dest, src, n);
 }
 
-int memcmp(const void* s1, const void* s2, size_t n) {
+__attribute__((always_inline)) int memcmp(const void* s1, const void* s2,
+                                          size_t n) {
     return __builtin_memcmp(s1, s2, n);
 }
 
-int strcmp(const char* s1, const char* s2) { return __builtin_strcmp(s1, s2); }
-
-int strncmp(const char* s1, const char* s2, size_t n) {
-    return __builtin_strncmp(s1, s2, n);
+__attribute__((always_inline))  //
+int strcmp(const char* s1, const char* s2) {
+    return __builtin_strcmp(s1, s2);
 }
 
-size_t strlen(const char* s) { return __builtin_strlen(s); }
+__attribute__((always_inline)) int strncmp(const char* s1, const char* s2,
+                                           size_t n) {
+    return __builtin_strncmp(s1, s2, n);
+}
+__attribute__((always_inline)) size_t strlen(const char* s) {
+    return __builtin_strlen(s);
+}
 
-__attribute__((optimize("O3")))  // should work?
+__attribute__((optimize("O2")))  // should work?
 size_t strnlen(const char*, size_t);
 
 size_t strnlen(const char* s, size_t maxlen) {
@@ -33,7 +47,7 @@ size_t strnlen(const char* s, size_t maxlen) {
             return i;
         }
     }
-    return maxlen;
+    return maxlen - 1;
 }
 
 // size_t strnlen(const char* s, size_t maxlen) {
@@ -81,9 +95,10 @@ size_t strnlen(const char* s, size_t maxlen) {
 // exit:
 //     return len;
 // }
-
-void* memchr(const void* ptr, int ch, size_t count) {
+__attribute__((always_inline)) void* memchr(const void* ptr, int ch,
+                                            size_t count) {
     return __builtin_memchr(ptr, ch, count);
 }
-
-char* strrchr(const char* str, int ch) { return __builtin_strrchr(str, ch); }
+__attribute__((always_inline)) char* strrchr(const char* str, int ch) {
+    return __builtin_strrchr(str, ch);
+}
