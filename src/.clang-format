@@ -1,0 +1,7 @@
+Language: C
+BasedOnStyle: google
+IndentWidth: 4
+AccessModifierOffset: -4 
+PointerAlignment: Left 
+AlignTrailingComments: true
+BreakAfterAttributes: Always
