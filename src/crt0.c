@@ -34,13 +34,19 @@ __attribute__((always_inline)) int strncmp(const char* s1, const char* s2,
                                            size_t n) {
     return __builtin_strncmp(s1, s2, n);
 }
+
+// TODO: Optimise naive implementation
 __attribute__((always_inline)) size_t strlen(const char* s) {
-    return __builtin_strlen(s);
+    // return __builtin_strlen(s);
+    size_t i = 0;
+    while (s[i] != 0) ++i;
+    return i;
 }
 
 __attribute__((optimize("O2")))  // should work?
 size_t strnlen(const char*, size_t);
 
+// TODO: Optimise naive implementation
 size_t strnlen(const char* s, size_t maxlen) {
     for (uint32_t i = 0; i < maxlen; ++i) {
         if (s[i] == 0) {
@@ -95,9 +101,18 @@ size_t strnlen(const char* s, size_t maxlen) {
 // exit:
 //     return len;
 // }
-__attribute__((always_inline)) void* memchr(const void* ptr, int ch,
-                                            size_t count) {
-    return __builtin_memchr(ptr, ch, count);
+
+// TODO: Optimise naive implementation
+typedef unsigned char u_char;
+void* memchr(const void* ptr__, int ch, size_t count) {
+    __auto_type ptr = (const u_char*)ptr__;
+    while (count > 0) {
+        if (*ptr == ch) {
+            return (void*)ptr;
+        }
+        ptr++, count--;
+    }
+    return NULL;
 }
 __attribute__((always_inline)) char* strrchr(const char* str, int ch) {
     return __builtin_strrchr(str, ch);
