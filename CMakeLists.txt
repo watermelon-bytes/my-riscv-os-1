@@ -55,14 +55,27 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 #     SUFFIX ".elf"
 # )
 
+set(QEMU_FLAGS
+    -machine virt
+    -bios none
+    -kernel $<TARGET_FILE:${PROJECT_NAME}>
+    -serial mon:stdio
+)
+
 add_custom_target(qemu-run
     COMMAND qemu-system-riscv32
-        -machine virt
-        -bios none
-        # -nographics
-        -kernel $<TARGET_FILE:${PROJECT_NAME}>
-        -serial mon:stdio
+        ${QEMU_FLAGS}
     DEPENDS ${PROJECT_NAME}
     USES_TERMINAL
     COMMENT "Running kernel in QEMU (RISC-V 32-bit virt machine)"
+)
+
+
+add_custom_target(qemu-debug
+    COMMAND qemu-system-riscv32
+        ${QEMU_FLAGS}
+        -S -s
+    DEPENDS ${PROJECT_NAME}
+    USES_TERMINAL
+    COMMENT "Running kernel in QEMU [waiting for GDB]"
 )
