@@ -1,18 +1,20 @@
 #include <init_devices.h>
 #include <libfdt.h>
-#include <uart.h>
+#include <drivers/uart.h>
 
-void kmain(int hardt_id, void* devicetree) {
-    uart_println("hello!");
-    const int devicetree_passed = fdt_check_header(devicetree);
-    if (devicetree_passed != 0) {
-        uart_println("FATAL: device tree not passed");
-        uart_println(fdt_strerror(devicetree_passed));
-        __asm__ __volatile__("wfi; \n");
-    }
-
-    uart_println("detected device tree");
-    init_devices(devicetree);
-    uart_println("here");
+void halt() {
+loop:
     __asm__ __volatile__("wfi; \n");
+    goto loop;
+}
+
+void kmain(int hardt_id, void* device_tree) {
+    uart_println("hello!");
+
+    if (!check_device_tree(device_tree)) {
+        halt();
+    }
+    init_devices(device_tree);
+    uart_println("[back in kmain]");
+    halt();
 }
