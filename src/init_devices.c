@@ -26,7 +26,6 @@ _Bool check_device_tree(const void* devtree) {
 
 // assumes the device tree is valid
 int init_devices(void* fdt) {
-    uart_println("function `init_devices` called");
     const int root = fdt_path_offset(fdt, "/");
     uart_println("device tree root found");
 
@@ -35,7 +34,6 @@ int init_devices(void* fdt) {
         uart_println(fdt_strerror(-root));
         return -1;
     }
-    uart_println("got root");
     for (int node = fdt_first_subnode(fdt, root); node >= 0;
          node = fdt_next_subnode(fdt, node)) {
         int err;
