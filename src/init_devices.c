@@ -91,20 +91,22 @@ int configure_field_size(void* fdt, int root) {
 
 // Could just return address and 0xFFFFFFF... on fault?
 // But let's stop overthinking
-bool fetch_native_pointer(uintptr_t* result, const u32* cells) {
+u32* fetch_native_pointer(uintptr_t* result, const u32* cells) {
     if (native_pointer_size >= cells_to_represent_pointer * sizeof(u32)) {
-        // NOTE: we assume that native pointer size can't be less than 32 bit
-        // width
-        *result = *cells;
-        return true;
+        // NOTE: assuming native pointer size can't be less than 32 bit width
+        *result = *cells++;
+        return cells;
     }
     const u32* p;
     for (p = cells; p < cells + cells_to_represent_pointer - 1; p++) {
         if (*p != 0) {
-            return false;
+            return NULL;
         }
     }
     // Assuming little endian
-    *result = __builtin_bswap32(*p);
-    return true;
+    *result = __builtin_bswap32(*p++);
+    return p;
 }
+
+void parse_reg(const uint32_t* reg, size_t len, uintptr_t* begin_buf,
+               size_t* size_buf) {}

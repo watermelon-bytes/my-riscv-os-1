@@ -40,7 +40,8 @@ int configure_field_size(void* fdt, int root);
  * Requires configure_field_size to be called beforehand as it relies on values
  * stored in variables by configure_field_size.
  */
-void parse_reg(const uint32_t* reg, uintptr_t* begin_buf, size_t* size_buf);
+void parse_reg(const uint32_t* reg, size_t len, uintptr_t* begin_buf,
+               size_t* size_buf);
 
 /**
  * Safely parses a Device Tree Address cell array into a native
@@ -60,8 +61,6 @@ void parse_reg(const uint32_t* reg, uintptr_t* begin_buf, size_t* size_buf);
  * @param[in]  cells   Pointer to the raw DT cell array representing the
  * address or size.
  *
- * @return true  If the value successfully fits and was copied into 'result'.
- * @return false If the value resides outside the addressable range of the
- * native architecture.
+ * Returns NULL on error, and pointer to next cell after the address on success.
  */
-bool fetch_native_pointer(uintptr_t* result, const uint32_t* cells);
+u32* fetch_native_pointer(uintptr_t* result, const uint32_t* cells);
