@@ -5,7 +5,6 @@
 #include <stddef.h>
 _Bool check_device_tree(void const*);
 
-const int native_pointer_size = sizeof(uintptr_t);
 int init_devices(void* fdt);
 
 /*

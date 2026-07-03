@@ -1,5 +1,5 @@
 #include <init_devices.h>
-#include <types.h>
+#include <utils.h>
 #include <drivers/uart.h>
 #include <libfdt.h>
 #include <drivers/memory.h>
@@ -74,6 +74,7 @@ device_initializer_func get_device_initializer(const char* name) {
     return NULL;
 }
 
+const int native_pointer_size = sizeof(uintptr_t);
 static int cells_to_represent_pointer = 0;
 static int cells_to_represent_size = 0;
 static bool configured = false;
@@ -91,22 +92,29 @@ int configure_field_size(void* fdt, int root) {
 
 // Could just return address and 0xFFFFFFF... on fault?
 // But let's stop overthinking
-u32* fetch_native_pointer(uintptr_t* result, const u32* cells) {
+static const u32*  //
+fetch_lowest(const u32* cells, uint cells_count, uintptr_t* buff) {
     if (native_pointer_size >= cells_to_represent_pointer * sizeof(u32)) {
         // NOTE: assuming native pointer size can't be less than 32 bit width
-        *result = *cells++;
-        return cells;
+        *buff = byte_swap_32(*cells);
+        return ++cells;
     }
+
     const u32* p;
-    for (p = cells; p < cells + cells_to_represent_pointer - 1; p++) {
+    for (p = cells; p < cells + cells_count - 1; p++) {
         if (*p != 0) {
             return NULL;
         }
     }
     // Assuming little endian
-    *result = __builtin_bswap32(*p++);
+    *buff = byte_swap_32(*p++);
     return p;
 }
 
-void parse_reg(const uint32_t* reg, size_t len, uintptr_t* begin_buf,
-               size_t* size_buf) {}
+const u32* fetch_native_pointer(uintptr_t* const result, const u32* cells) {
+    return fetch_lowest(cells, cells_to_represent_pointer, result);
+}
+
+const u32* fetch_size_field(register_t* result, const u32* cells) {
+    return fetch_lowest(cells, cells_to_represent_size, result);
+}
