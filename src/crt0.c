@@ -2,6 +2,7 @@
 #include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <types.h>
 
 // relying on __builtin_'s may look like a weakness
 // but it also may be a good time saving and code reusing
@@ -36,7 +37,7 @@ __attribute__((always_inline)) int strncmp(const char* s1, const char* s2,
 }
 
 // TODO: Optimise naive implementation
-__attribute__((always_inline)) size_t strlen(const char* s) {
+__attribute__((optimize("O2"))) size_t strlen(const char* s) {
     // return __builtin_strlen(s);
     size_t i = 0;
     while (s[i] != 0) ++i;
@@ -117,3 +118,11 @@ void* memchr(const void* ptr__, int ch, size_t count) {
 __attribute__((always_inline)) char* strrchr(const char* str, int ch) {
     return __builtin_strrchr(str, ch);
 }
+
+#define BYTE_MASK(byte_no) ({ UCHAR_MAX << (CHAR_BIT * byte_no); })
+u32 byte_swap_32(const u32 original) {
+    return ((original & BYTE_MASK(0)) << 24) |
+           ((original & BYTE_MASK(1)) << 8) | ((original & BYTE_MASK(2)) >> 8) |
+           ((original & BYTE_MASK(3)) >> 24);
+}
+#undef BYTE_MASK
