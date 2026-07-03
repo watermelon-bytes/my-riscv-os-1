@@ -1,8 +1,11 @@
+#pragma once
 #include <stdbool.h>
+#include <types.h>
 #include <stdint.h>
 #include <stddef.h>
 _Bool check_device_tree(void const*);
 
+const int native_pointer_size = sizeof(uintptr_t);
 int init_devices(void* fdt);
 
 /*
@@ -40,8 +43,7 @@ int configure_field_size(void* fdt, int root);
  * Requires configure_field_size to be called beforehand as it relies on values
  * stored in variables by configure_field_size.
  */
-void parse_reg(const uint32_t* reg, size_t len, uintptr_t* begin_buf,
-               size_t* size_buf);
+void parse_reg(const uint32_t* reg, uintptr_t* begin_buf, size_t* size_buf);
 
 /**
  * Safely parses a Device Tree Address cell array into a native
@@ -63,4 +65,5 @@ void parse_reg(const uint32_t* reg, size_t len, uintptr_t* begin_buf,
  *
  * Returns NULL on error, and pointer to next cell after the address on success.
  */
-u32* fetch_native_pointer(uintptr_t* result, const uint32_t* cells);
+const u32* fetch_native_pointer(uintptr_t* const result, const uint32_t* cells);
+const u32* fetch_size_field(register_t* result, const u32* cells);
