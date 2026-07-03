@@ -1,3 +1,5 @@
+#include <init_devices.h>
+#include <types.h>
 #include <drivers/uart.h>
 #include <libfdt.h>
 #include <drivers/memory.h>
@@ -38,46 +40,71 @@ int init_devices(void* fdt) {
          node = fdt_next_subnode(fdt, node)) {
         int err;
         const char* name = fdt_get_name(fdt, node, &err);
-        if (err < 0)
+        if (err < 0) {
             uart_println(fdt_strerror(err));
-        else {
-            putchar('/');
-            uart_println(name);
+            continue;
+        }
+
+        putchar('/');
+        uart_println(name);
+        device_initializer_func initializer = get_device_initializer(name);
+        if (initializer != NULL) {
+            initializer(fdt, node);
         }
     }
     return 0;
 }
 
-static const struct {
-    const char* name;
-    // function that accepts node of a device tree
-    int (*init_device)(const void* tree, int node);
-} possible_names[] = {{"memory", &extract_ram_region_info},
-                      {"poweroff"},
-                      {"platform-bus"},
-                      {"flash"},
-                      {"soc"}};
-// TODO: add initialisers for more possible nodes
+// Could have used enum here ??
+const char* possible_names[] = {"memory", "poweroff", "platform-bus", "flash",
+                                "soc"};
+device_initializer_func matching_initializers[countof(possible_names)] = {
+    extract_ram_region_info,
+};
+// TODO: add initializers for more possible nodes
 
-// Defines which device initialiser to call and performs the call
-int parse_device_info(const void* tree, int node) {
-    const char* name;
-    {
-        int err;
-        name = fdt_get_name(tree, node, &err);
-        if (err) return 1;
-    }
-    int index = -1;
+// Defines which device initializer to call and performs the call
+device_initializer_func get_device_initializer(const char* name) {
     for (uint32_t i = 0; i < sizeof(possible_names) / sizeof(possible_names[0]);
          ++i) {
-        if (strcmp(name, possible_names[i].name) == 0) {
-            index = i;
-            break;
+        if (strcmp(name, possible_names[i]) == 0) {
+            return matching_initializers[i];
         }
     }
-    if (index < 0 || possible_names[index].init_device == NULL) {
-        return 2;
-    }
+    return NULL;
+}
 
-    return possible_names[index].init_device(tree, node);
+static int cells_to_represent_pointer = 0;
+static int cells_to_represent_size = 0;
+static bool configured = false;
+int configure_field_size(void* fdt, int root) {
+    if (configured) return 1;
+    cells_to_represent_size = fdt_size_cells(fdt, root);
+    if (cells_to_represent_size < 0) return cells_to_represent_size;
+
+    cells_to_represent_pointer = fdt_address_cells(fdt, root);
+    if (cells_to_represent_pointer < 0) return cells_to_represent_pointer;
+
+    configured = true;
+    return 0;
+}
+
+// Could just return address and 0xFFFFFFF... on fault?
+// But let's stop overthinking
+bool fetch_native_pointer(uintptr_t* result, const u32* cells) {
+    if (native_pointer_size >= cells_to_represent_pointer * sizeof(u32)) {
+        // NOTE: we assume that native pointer size can't be less than 32 bit
+        // width
+        *result = *cells;
+        return true;
+    }
+    const u32* p;
+    for (p = cells; p < cells + cells_to_represent_pointer - 1; p++) {
+        if (*p != 0) {
+            return false;
+        }
+    }
+    // Assuming little endian
+    *result = __builtin_bswap32(*p);
+    return true;
 }
