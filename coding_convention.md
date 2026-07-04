@@ -4,7 +4,9 @@
 - We do not aim to support other architectures than RISC-V yet; so RISC-V specific code doesn't have to be strictly separated from more abstract, architecture-independent code. However, since it's a good practice, it is a recommended thing to do.
 
 ## Naming
-- All `camel_case`; only macros use `CAPS_LOCK_CASE` to be different.
+- Variables, functions, function parameters, structure fields and names, and enumeration names must be `camel_case` without any exception
+- `enum` members, macros, and potentially `constexpr` variables (we are considering accepting C23 now) are `CAPS_LOCK_CASE` to be easily distinguishable
+- Avoid dropping `struct` or `enum` keyword via `typedef`.
 
 ## Formatting
 - Use `clang-format`.
