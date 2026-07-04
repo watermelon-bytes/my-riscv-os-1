@@ -11,10 +11,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_subdirectory(libfdt)
 
 file(GLOB_RECURSE SOURCES
-    "src/*.c"
-    "src/drivers/*.c"
-    "src/klibc/*.c"
-    "src/*.S"
+    "src/**.c"
+    "src/**.S"
 )
 add_executable(${PROJECT_NAME} ${SOURCES})
 
@@ -49,11 +47,6 @@ target_compile_options(${PROJECT_NAME} PRIVATE
     -nostartfiles
     -mabi=ilp32d
 )
-
-# Output binary name and location
-# set_target_properties(${PROJECT_NAME} PROPERTIES
-#     SUFFIX ".elf"
-# )
 
 set(QEMU_FLAGS
     -machine virt
