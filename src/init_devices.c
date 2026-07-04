@@ -16,14 +16,14 @@ _Bool check_device_tree(const void* devtree) {
                fdt_strerror(devicetree_passed));
         return false;
     }
-    printf("detected possibly valid device tree!");
+    printf("detected possibly valid device tree!\n");
 
     const int err = fdt_check_full(devtree, fdt_totalsize(devtree));
     if (err) {
-        printf("[FATAL] device tree turned out to be invalid");
+        printf("[FATAL] device tree turned out to be invalid\n");
         return false;
     }
-    uart_println("[OK] device tree has been verified");
+    printf("[OK] device tree has been verified\n");
     return true;
 }
 
@@ -58,11 +58,14 @@ int init_devices(void* fdt) {
             continue;
         }
 
-        putchar('/');
-        uart_println(name);
+        printf("/%s\n", name);
         device_initializer_func initializer = get_device_initializer(name);
         if (initializer != NULL) {
+            printf("calling '%s' initializer...\n", name);
             initializer(fdt, node);
+        } else {
+            printf("could not find a valid initializer for device: '%s'\n",
+                   name);
         }
     }
     return 0;
@@ -80,7 +83,7 @@ device_initializer_func matching_initializers[countof(possible_names)] = {
 device_initializer_func get_device_initializer(const char* name) {
     for (uint32_t i = 0; i < sizeof(possible_names) / sizeof(possible_names[0]);
          ++i) {
-        if (strcmp(name, possible_names[i]) == 0) {
+        if (strncmp(name, possible_names[i], strlen(possible_names[i])) == 0) {
             return matching_initializers[i];
         }
     }
