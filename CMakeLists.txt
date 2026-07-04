@@ -13,6 +13,7 @@ add_subdirectory(libfdt)
 file(GLOB_RECURSE SOURCES
     "src/*.c"
     "src/drivers/*.c"
+    "src/klibc/*.c"
     "src/*.S"
 )
 add_executable(${PROJECT_NAME} ${SOURCES})
@@ -44,7 +45,6 @@ target_compile_options(${PROJECT_NAME} PRIVATE
     -Wall -Wextra
     -mcmodel=medany
     -ffreestanding
-    -nostdlib
     -march=rv32imacd_zicsr
     -nostartfiles
     -mabi=ilp32d
@@ -79,3 +79,7 @@ add_custom_target(qemu-debug
     USES_TERMINAL
     COMMENT "Running kernel in QEMU [waiting for GDB]"
 )
+
+if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    target_compile_definitions(${PROJECT_NAME} PUBLIC DEBUG)
+endif()
