@@ -16,7 +16,6 @@ _Bool check_device_tree(const void* devtree) {
                fdt_strerror(devicetree_passed));
         return false;
     }
-    printf("detected possibly valid device tree!\n");
 
     const int err = fdt_check_full(devtree, fdt_totalsize(devtree));
     if (err) {
@@ -47,7 +46,6 @@ int init_devices(void* fdt) {
     }
 
     RETURN_ON_ERR(configure_field_size(fdt, root));
-    printf("[back in init_devices]");
 
     for (int node = fdt_first_subnode(fdt, root); node >= 0;
          node = fdt_next_subnode(fdt, node)) {
@@ -58,14 +56,13 @@ int init_devices(void* fdt) {
             continue;
         }
 
-        printf("/%s\n", name);
+        printf("/%s - ", name);
         device_initializer_func initializer = get_device_initializer(name);
         if (initializer != NULL) {
             printf("calling '%s' initializer...\n", name);
             initializer(fdt, node);
         } else {
-            printf("could not find a valid initializer for device: '%s'\n",
-                   name);
+            printf("no valid initializer for device: '%s'\n", name);
         }
     }
     return 0;
@@ -90,9 +87,13 @@ device_initializer_func get_device_initializer(const char* name) {
     return NULL;
 }
 
-const int native_pointer_size = sizeof(uintptr_t);
+const int register_width = sizeof(uintptr_t);
 static int cells_to_represent_pointer = 0;
 static int cells_to_represent_size = 0;
+
+int get_sizeof_one_descriptor() {
+    return cells_to_represent_pointer + cells_to_represent_size;
+}
 
 int configure_field_size(void* fdt, int root) {
     uart_println("configure_field_size called");
@@ -107,11 +108,10 @@ int configure_field_size(void* fdt, int root) {
     return 0;
 }
 
-// Could just return address and 0xFFFFFFF... on fault?
-// But let's stop overthinking
+// returns pointer to next cell
 static const u32*  //
 fetch_lowest(const u32* cells, uint cells_count, uintptr_t* buff) {
-    if (native_pointer_size >= cells_to_represent_pointer * sizeof(u32)) {
+    if (register_width >= cells_count * sizeof(u32)) {
         // NOTE: assuming native pointer size can't be less than 32 bit width
         *buff = byte_swap_32(*cells);
         return ++cells;
@@ -120,12 +120,15 @@ fetch_lowest(const u32* cells, uint cells_count, uintptr_t* buff) {
     const u32* p;
     for (p = cells; p < cells + cells_count - 1; p++) {
         if (*p != 0) {
-            return NULL;
+            // printf()
+            *buff = UINTPTR_MAX;
+            goto exit;
         }
     }
     // Assuming little endian
-    *buff = byte_swap_32(*p++);
-    return p;
+    *buff = byte_swap_32(*p);
+exit:
+    return ++p;
 }
 
 const u32* fetch_native_pointer(uintptr_t* const result, const u32* cells) {
