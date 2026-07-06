@@ -73,6 +73,6 @@ add_custom_target(qemu-debug
     COMMENT "Running kernel in QEMU [waiting for GDB]"
 )
 
-if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(${PROJECT_NAME} PUBLIC DEBUG)
 endif()
