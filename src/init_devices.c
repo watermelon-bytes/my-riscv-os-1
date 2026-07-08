@@ -113,7 +113,7 @@ static const u32*  //
 fetch_lowest(const u32* cells, uint cells_count, uintptr_t* buff) {
     if (register_width >= cells_count * sizeof(u32)) {
         // NOTE: assuming native pointer size can't be less than 32 bit width
-        *buff = byte_swap_32(*cells);
+        *buff = fdt32_to_cpu(*cells);
         return ++cells;
     }
 
@@ -126,7 +126,7 @@ fetch_lowest(const u32* cells, uint cells_count, uintptr_t* buff) {
         }
     }
     // Assuming little endian
-    *buff = byte_swap_32(*p);
+    *buff = fdt32_to_cpu(*p);
 exit:
     return ++p;
 }
