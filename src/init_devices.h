@@ -35,14 +35,16 @@ device_initializer_func get_device_initializer(const char* name);
 int configure_field_size(void* fdt, int root);
 
 /*
- * @reg
+ * @tree Pointer to device tree
+ * @node Offset of the node containing the necessary <reg> field
  * @begin_buf Pointer to buffer where start address will be stored
  * @size_buf Pointer to buffer where size will be stored
  *
  * Requires configure_field_size to be called beforehand as it relies on values
  * stored in variables by configure_field_size.
  */
-void parse_reg(const uint32_t* reg, uintptr_t* begin_buf, size_t* size_buf);
+void parse_reg(void* tree, const int node, uintptr_t* begin_buf,
+               size_t* size_buf);
 
 /**
  * Safely parses a Device Tree Address cell array into a native
@@ -66,3 +68,9 @@ void parse_reg(const uint32_t* reg, uintptr_t* begin_buf, size_t* size_buf);
  */
 const u32* fetch_native_pointer(uintptr_t* const result, const uint32_t* cells);
 const u32* fetch_size_field(register_t* result, const u32* cells);
+
+int get_sizeof_one_descriptor();
+
+int detect_memory(void* fdt);
+int detect_power_config(void* fdt);
+int parse_systems_on_chip(void* fdt);
