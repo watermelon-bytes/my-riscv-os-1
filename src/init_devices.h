@@ -43,8 +43,8 @@ int configure_field_size(void* fdt, int root);
  * Requires configure_field_size to be called beforehand as it relies on values
  * stored in variables by configure_field_size.
  */
-void parse_reg(void* tree, const int node, uintptr_t* begin_buf,
-               size_t* size_buf);
+int parse_reg(const void* tree, const int node, uintptr_t* begin_buf,
+              size_t* size_buf);
 
 /**
  * Safely parses a Device Tree Address cell array into a native
@@ -74,3 +74,9 @@ int get_sizeof_one_descriptor();
 int detect_memory(void* fdt);
 int detect_power_config(void* fdt);
 int parse_systems_on_chip(void* fdt);
+
+enum parsing_error {
+    NO_SUCH_FIELD,
+    OUT_OF_SLOTS,
+    ORIG_VAL_TOO_BIG,
+};

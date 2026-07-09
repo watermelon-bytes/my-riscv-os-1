@@ -96,7 +96,6 @@ int get_sizeof_one_descriptor() {
 }
 
 int configure_field_size(void* fdt, int root) {
-    uart_println("configure_field_size called");
     if (configured) return 1;
     cells_to_represent_size = fdt_size_cells(fdt, root);
     if (cells_to_represent_size < 0) return cells_to_represent_size;
@@ -110,7 +109,8 @@ int configure_field_size(void* fdt, int root) {
 
 // returns pointer to next cell
 static const u32*  //
-fetch_lowest(const u32* cells, uint cells_count, uintptr_t* buff) {
+fetch_lowest(const u32* cells, uint cells_count, uintptr_t* buff,
+             bool fail_on_overflow) {
     if (register_width >= cells_count * sizeof(u32)) {
         // NOTE: assuming native pointer size can't be less than 32 bit width
         *buff = fdt32_to_cpu(*cells);
@@ -120,7 +120,9 @@ fetch_lowest(const u32* cells, uint cells_count, uintptr_t* buff) {
     const u32* p;
     for (p = cells; p < cells + cells_count - 1; p++) {
         if (*p != 0) {
-            // printf()
+            if (fail_on_overflow) {
+                return NULL;
+            }
             *buff = UINTPTR_MAX;
             goto exit;
         }
@@ -130,11 +132,42 @@ fetch_lowest(const u32* cells, uint cells_count, uintptr_t* buff) {
 exit:
     return ++p;
 }
+#define RETURN_VAL_IF_NULL(func_call, val) \
+    ({                                     \
+        __auto_type tmp = (func_call);     \
+        if (tmp == NULL) return (val);     \
+        tmp;                               \
+    })
 
-const u32* fetch_native_pointer(uintptr_t* const result, const u32* cells) {
-    return fetch_lowest(cells, cells_to_represent_pointer, result);
-}
+#define RETURN_IF_LESS_THAN_ZERO(func_call) \
+    ({                                      \
+        __auto_type tmp = (func_call);      \
+        if (tmp < 0) return tmp;            \
+        tmp;                                \
+    })
 
-const u32* fetch_size_field(register_t* result, const u32* cells) {
-    return fetch_lowest(cells, cells_to_represent_size, result);
+// Supports only one address-size pair in reg
+// TODO: Return some specific value like CALL_AGAIN to notify the caller that
+// <reg> field contains more than one entry but we can't handle it because we
+// can't know where we have to store result
+int parse_reg(const void* tree, const int node, uintptr_t* begin_addr_buf,
+              size_t* size_buf) {
+    int len;
+    __auto_type reg =
+        RETURN_VAL_IF_NULL(fdt_getprop(tree, node, "reg", &len), len);
+    // address
+    int address_cells = RETURN_IF_LESS_THAN_ZERO(fdt_address_cells(tree, node));
+    reg = fetch_lowest(reg, address_cells, begin_addr_buf, true);
+    if (reg == NULL) {
+        return ORIG_VAL_TOO_BIG;
+    }
+
+    // size
+    __auto_type size_cells =
+        RETURN_IF_LESS_THAN_ZERO(fdt_size_cells(tree, node));
+    fetch_lowest(reg, size_cells, size_buf, false);
+
+    return 0;
 }
+#undef RETURN_ON_ERR
+#undef RETURN_IF_LESS_THAN_ZERO
