@@ -21,7 +21,6 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 #     C_STANDARD_REQUIRED YES
 #     C_EXTENSIONS NO
 # )
-
 # Link against libfdt
 target_link_libraries(${PROJECT_NAME} PRIVATE fdt)
 
@@ -72,7 +71,3 @@ add_custom_target(qemu-debug
     USES_TERMINAL
     COMMENT "Running kernel in QEMU [waiting for GDB]"
 )
-
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_compile_definitions(${PROJECT_NAME} PUBLIC DEBUG)
-endif()

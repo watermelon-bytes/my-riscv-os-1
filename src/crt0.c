@@ -1,53 +1,85 @@
-
+#include <klibc/printf.h>
+#include <klibc/optimization_lvls.h>
 #include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <types.h>
+#include <drivers/uart.h>
 
+#ifndef NDEBUG
+#define LOG_CALL ({ printf("function %s was called\n", __PRETTY_FUNCTION__); })
+#else
+#define LOG_CALL ;
+#endif
 // relying on __builtin_'s may look like a weakness
 // but it also may be a good time saving and code reusing
 
-__attribute__((always_inline)) void* memcpy(void* __restrict dest,
-                                            const void* __restrict src,
-                                            size_t n) {
+SET_OPTIMIZATION_LVL(2)
+void* memcpy(void* __restrict dest, const void* __restrict src, size_t n) {
+    LOG_CALL;
     return __builtin_memcpy(dest, src, n);
 }
 
-__attribute__((always_inline)) void* memset(void* s, int c, size_t n) {
+SET_OPTIMIZATION_LVL(2)
+void* memset(void* s, int c, size_t n) {
+    LOG_CALL;
     return __builtin_memset(s, c, n);
 }
-__attribute__((always_inline)) void* memmove(void* dest, const void* src,
-                                             size_t n) {
+
+SET_OPTIMIZATION_LVL(2)
+void* memmove(void* dest, const void* src, size_t n) {
+    LOG_CALL;
     return __builtin_memmove(dest, src, n);
 }
 
-__attribute__((always_inline)) int memcmp(const void* s1, const void* s2,
-                                          size_t n) {
-    return __builtin_memcmp(s1, s2, n);
+// TODO: write a normal version
+SET_OPTIMIZATION_LVL(2)
+int memcmp(const void* s1, const void* s2, size_t n) {
+    __auto_type p1 = (u8*)s1;
+    __auto_type p2 = (u8*)s2;
+    for (; n > 0; n--) {
+        if (*p1++ != *p2++) {
+            return p1 - p2;
+        }
+    }
+    return 0;
 }
 
-__attribute__((always_inline))  //
+SET_OPTIMIZATION_LVL(2)
 int strcmp(const char* s1, const char* s2) {
-    return __builtin_strcmp(s1, s2);
+    while (*s1 && (*s1 == *s2)) {
+        s1++, s2++;
+    }
+    return *(u8*)s1 - *(u8*)s2;
 }
 
-__attribute__((always_inline)) int strncmp(const char* s1, const char* s2,
-                                           size_t n) {
-    return __builtin_strncmp(s1, s2, n);
+SET_OPTIMIZATION_LVL(2)
+int strncmp(const char* s1, const char* s2, const size_t sz) {
+    for (signed n = sz; n > 0; --n) {
+        const int diff = *s1 - *s2;
+        if (diff != 0) {
+            return diff;
+        } else if (*s1 == 0 || *s2 == 0) {
+            break;
+        }
+    }
+    return 0;
 }
 
 // TODO: Optimise naive implementation
-__attribute__((optimize("O2"))) size_t strlen(const char* s) {
+SET_OPTIMIZATION_LVL(2)
+size_t strlen(const char* s) {
     // return __builtin_strlen(s);
     size_t i = 0;
     while (s[i] != 0) ++i;
     return i;
 }
 
-__attribute__((optimize("O2")))  // should work?
+SET_OPTIMIZATION_LVL(2)
 size_t strnlen(const char*, size_t);
 
 // TODO: Optimise naive implementation
+SET_OPTIMIZATION_LVL(2)
 size_t strnlen(const char* s, size_t maxlen) {
     for (uint32_t i = 0; i < maxlen; ++i) {
         if (s[i] == 0) {
@@ -57,54 +89,8 @@ size_t strnlen(const char* s, size_t maxlen) {
     return maxlen - 1;
 }
 
-// size_t strnlen(const char* s, size_t maxlen) {
-//     uint32_t buf;
-//     uint32_t len = 0;
-//     uint32_t current_byte;  // only lowest 8 bits are used
-//
-//     {
-//         unsigned int unaligned = (uintptr_t)s & 0b11;
-//         if (!unaligned) {
-//             goto further;
-//         }
-//         for (; unaligned > 0; --unaligned, s++, len++) {
-//             if (len > maxlen || *s == '\0') return len;
-//         }
-//     further:;
-//     }
-//
-//     uint32_t* ptr = (uint32_t*)s;
-//     uint32_t remainder = maxlen & 0xFFu;
-//     maxlen &= (~0xFFul);
-//
-//     while (len < maxlen) {
-//         buf = *ptr++;
-//         if (!buf) goto exit;
-//         while (buf != 0) {
-//             current_byte = buf & UCHAR_MAX;
-//             if (current_byte == 0) {
-//                 goto exit;
-//             }
-//             if (maxlen - len == 1) {
-//                 return len;
-//             }
-//             len++;
-//             buf = buf >> CHAR_BIT;
-//         }
-//     }
-//     for (s = (char*)ptr; remainder > 0; s++, remainder--) {
-//         const char c = *s;
-//         if (c == 0) {
-//             return len;
-//         }
-//         len++;
-//     }
-// exit:
-//     return len;
-// }
-
 // TODO: Optimise naive implementation
-typedef unsigned char u_char;
+SET_OPTIMIZATION_LVL(2)
 void* memchr(const void* ptr__, int ch, size_t count) {
     __auto_type ptr = (const u_char*)ptr__;
     while (count > 0) {
@@ -115,14 +101,20 @@ void* memchr(const void* ptr__, int ch, size_t count) {
     }
     return NULL;
 }
-__attribute__((always_inline)) char* strrchr(const char* str, int ch) {
-    return __builtin_strrchr(str, ch);
+
+SET_OPTIMIZATION_LVL(2)
+char* strrchr(const char* str, int ch) {
+    while (*str != 0) {
+        if (*str == ch) return (char*)str;
+    }
+    return NULL;
 }
 
-#define BYTE_MASK(byte_no) ({ UCHAR_MAX << (CHAR_BIT * byte_no); })
 u32 byte_swap_32(const u32 original) {
+#define BYTE_MASK(byte_no) ({ UCHAR_MAX << (CHAR_BIT * byte_no); })
     return ((original & BYTE_MASK(0)) << 24) |
            ((original & BYTE_MASK(1)) << 8) | ((original & BYTE_MASK(2)) >> 8) |
            ((original & BYTE_MASK(3)) >> 24);
-}
 #undef BYTE_MASK
+}
+#undef LOG_CALL
