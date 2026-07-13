@@ -1,4 +1,6 @@
 #include <init_devices.h>
+#include <klibc/panic.h>
+#include <utils.h>
 #include <klibc/printf.h>
 #include <utils.h>
 #include <drivers/uart.h>
@@ -25,14 +27,6 @@ _Bool check_device_tree(const void* devtree) {
     printf("[OK] device tree has been verified\n");
     return true;
 }
-
-#define RETURN_ON_ERR(function_call)       \
-    ({                                     \
-        __auto_type _temp = function_call; \
-        if (_temp) {                       \
-            return _temp;                  \
-        }                                  \
-    })
 
 // assumes the device tree is valid
 int init_devices(void* fdt) {
@@ -107,67 +101,67 @@ int configure_field_size(void* fdt, int root) {
     return 0;
 }
 
-// returns pointer to next cell
-static const u32*  //
-fetch_lowest(const u32* cells, uint cells_count, uintptr_t* buff,
-             bool fail_on_overflow) {
+// @param cell_ptr: Pointer to the start of data location
+// @param cells_count: How many 32-bit pieces encode the value
+// @return Value represented in cell_ptr[cells_count], if it fits into machine
+// register, or UINTPTR_MAX otherwise
+SET_OPTIMIZATION_LVL(2)
+static uintptr_t fetch_lowest_(const u32* cell_ptr, uint cells_count) {
     if (register_width >= cells_count * sizeof(u32)) {
-        // NOTE: assuming native pointer size can't be less than 32 bit width
-        *buff = fdt32_to_cpu(*cells);
-        return ++cells;
+        return *cell_ptr;
     }
-
-    const u32* p;
-    for (p = cells; p < cells + cells_count - 1; p++) {
-        if (*p != 0) {
-            if (fail_on_overflow) {
-                return NULL;
-            }
-            *buff = UINTPTR_MAX;
-            goto exit;
+    // Loop until
+    // cell_ptr == cell_ptr + (size of cell * cells_count) - sizeof(uintptr_t)
+    for (; cells_count > register_width / sizeof(u32); --cells_count) {
+        if (*cell_ptr != 0) {
+            return UINTPTR_MAX;
         }
+        cell_ptr++;
     }
-    // Assuming little endian
-    *buff = fdt32_to_cpu(*p);
-exit:
-    return ++p;
+    return fdt32_to_cpu(*(uintptr_t*)cell_ptr);
 }
-#define RETURN_VAL_IF_NULL(func_call, val) \
-    ({                                     \
-        __auto_type tmp = (func_call);     \
-        if (tmp == NULL) return (val);     \
-        tmp;                               \
-    })
-
-#define RETURN_IF_LESS_THAN_ZERO(func_call) \
-    ({                                      \
-        __auto_type tmp = (func_call);      \
-        if (tmp < 0) return tmp;            \
-        tmp;                                \
-    })
 
 // Supports only one address-size pair in reg
-// TODO: Return some specific value like CALL_AGAIN to notify the caller that
-// <reg> field contains more than one entry but we can't handle it because we
-// can't know where we have to store result
+/* TODO: Return some specific value like CALL_AGAIN to notify the caller that
+ * <reg> field contains more than one entry but we can't handle it because we
+ * can't know where we have to store result, and add argument for caller to
+ * index the necessary entry or store an iterator in static variable */
 int parse_reg(const void* tree, const int node, uintptr_t* begin_addr_buf,
               size_t* size_buf) {
+    if (!configured) configure_field_size(tree, fdt_path_offset(tree, "/"));
     int len;
-    __auto_type reg =
-        RETURN_VAL_IF_NULL(fdt_getprop(tree, node, "reg", &len), len);
+    const u32* reg = fdt_getprop(tree, node, "reg", &len);
+    if (len < 0) return len;
     // address
-    int address_cells = RETURN_IF_LESS_THAN_ZERO(fdt_address_cells(tree, node));
-    reg = fetch_lowest(reg, address_cells, begin_addr_buf, true);
-    if (reg == NULL) {
-        return ORIG_VAL_TOO_BIG;
-    }
+
+    int parent = RETURN_IF_LESS_THAN_ZERO(fdt_parent_offset(tree, node));
+    uint address_cells =
+        RETURN_IF_LESS_THAN_ZERO(fdt_address_cells(tree, parent));
+    *begin_addr_buf = fetch_lowest_(reg, address_cells);
+    reg += address_cells;
 
     // size
-    __auto_type size_cells =
-        RETURN_IF_LESS_THAN_ZERO(fdt_size_cells(tree, node));
-    fetch_lowest(reg, size_cells, size_buf, false);
+    const uint size_cells =
+        RETURN_IF_LESS_THAN_ZERO(fdt_size_cells(tree, parent));
+    printf("size_cells = %i\n");
+    *size_buf = fetch_lowest_(reg, size_cells);
+    /* TODO: How to handle the case when the node has no #size-cells field? How
+     * do we distinguish whether "1" means that there IS that field and its
+     * value is 1, or it's just what libfdt returns by default? */
+
+    // NOTE: from Devicetree Specification:
+    /* The #address-cells and #size-cells properties are not inherited from
+     * ancestors in the devicetree. They shall be explicitly defined. A
+     * DTSpec-compliant boot program shall supply #address-cells and #size-cells
+     * on all nodes that have children. */
+
+    /* Since reg field may contain more than one entry, but they all can't be
+     * handled in a single call because the function knows only one pair of
+     * buffers and can't know where next buffer is placed, notify the caller if
+     * other entries left unparsed yet */
+    if ((unsigned)len > sizeof(u32) * (address_cells + size_cells)) {
+        return CALL_AGAIN;
+    }
 
     return 0;
 }
-#undef RETURN_ON_ERR
-#undef RETURN_IF_LESS_THAN_ZERO
