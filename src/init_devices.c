@@ -126,7 +126,7 @@ static uintptr_t fetch_lowest_(const u32* cell_ptr, uint cells_count) {
  * <reg> field contains more than one entry but we can't handle it because we
  * can't know where we have to store result, and add argument for caller to
  * index the necessary entry or store an iterator in static variable */
-int parse_reg(const void* tree, const int node, uintptr_t* begin_addr_buf,
+int parse_reg(void* tree, const int node, uintptr_t* begin_addr_buf,
               size_t* size_buf) {
     if (!configured) configure_field_size(tree, fdt_path_offset(tree, "/"));
     int len;
