@@ -13,5 +13,3 @@ typedef uint8_t u8;
 typedef int8_t i8;
 typedef uintptr_t register_t;
 typedef unsigned char u_char;
-
-#define countof(array) (sizeof(array) / sizeof(array[0]))
