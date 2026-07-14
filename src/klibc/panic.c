@@ -1,4 +1,5 @@
 #include "panic.h"
+#include <klibc/printf.h>
 
 void halt() {
 loop:
