@@ -1,12 +1,14 @@
-#include <klibc/printf.h>
 #include <klibc/optimization_lvls.h>
 #include <limits.h>
-#include <stddef.h>
 #include <stdint.h>
 #include <types.h>
-#include <drivers/uart.h>
+
+_Static_assert(
+    sizeof(void*) == sizeof(uintptr_t),
+    "Impossible error: sizeof(uintptr_t) != sizeof(void*)");  // who knows
 
 #ifndef NDEBUG
+#include <klibc/printf.h>
 #define LOG_CALL ({ printf("function %s was called\n", __PRETTY_FUNCTION__); })
 #else
 #define LOG_CALL ;

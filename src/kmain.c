@@ -10,7 +10,6 @@ void kmain(int hardt_id, void* device_tree) {
     if (!check_device_tree(device_tree)) {
         k_panic("invalid device tree was passed");
     }
-    configure_field_size(device_tree, fdt_path_offset(device_tree, "/"));
     detect_memory(device_tree);
     halt();
 }

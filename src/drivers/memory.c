@@ -6,7 +6,7 @@
 
 int detect_memory(void* tree) {
     const char memory_str[] = "memory";
-    const char prop_len = countof(memory_str);
+    const int prop_len = countof(memory_str);
     int mem_node_offset = fdt_node_offset_by_prop_value(tree, -1, "device_type",
                                                         memory_str, prop_len);
     // Iterate through all nodes with "device_type"="memory"
@@ -26,29 +26,37 @@ int detect_memory(void* tree) {
     return 0;
 }
 
-struct space {
-    uintptr_t beginning_physicaddr;
+static struct space {
+    uintptr_t physicaddr;
     size_t space_size;
-} ram_regions[MAX_MEM_REGIONS] = {};
-static int ram_regions_index = 0;
+} ram_regions_[MAX_MEM_REGIONS] = {};
+static uint ram_regions_index_ = 0;
 
 // TODO: replace raw `int` with `enum` or something
 int extract_ram_region_info(const void* device_tree, int node_offset) {
-    if (ram_regions_index >= MAX_MEM_REGIONS) {
+    if (ram_regions_index_ >= MAX_MEM_REGIONS) {
         return -1;
     }
-    __auto_type buf = &ram_regions[ram_regions_index++];
-    return parse_reg(device_tree, node_offset, &buf->beginning_physicaddr,
-                     &buf->space_size);
+    __auto_type buf = &ram_regions_[ram_regions_index_++];
+    const __auto_type res =
+        parse_reg(device_tree, node_offset, &buf->physicaddr, &buf->space_size);
+    return res;
 }
 
 #ifndef NDEBUG
 void log_detected_memory() {
     printf("detected RAM:\n");
-    for (uint32_t i = 0;
-         i < MAX_MEM_REGIONS && ram_regions[i].beginning_physicaddr != 0; ++i) {
+    for (uint32_t i = 0; i < ram_regions_index_; ++i) {
         printf("[region %i] start = at 0x%x, size = %lu B\n", i + 1,
-               ram_regions[i].beginning_physicaddr, ram_regions[i].space_size);
+               ram_regions_[i].physicaddr, ram_regions_[i].space_size);
     }
 }
 #endif
+
+i32 get_total_mem() {
+    int counter = 0;
+    for (int i = 0; i < MAX_MEM_REGIONS; ++i) {
+        counter += ram_regions_[i].space_size;
+    }
+    return counter;
+}
