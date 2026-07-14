@@ -1,4 +1,5 @@
 #include "panic.h"
+
 #include <klibc/printf.h>
 
 void halt() {
@@ -7,7 +8,10 @@ loop:
     goto loop;
 }
 
-void k_panic(const char reason[]) {
-    printf("[PANIC] halting: %s\n", reason);
-    halt();
-}
+#define KERNEL_PANIC(...)            \
+    ({                               \
+        printf("[PANIC] halting: "); \
+        printf(__VA_ARGS__);         \
+        _putchar('\n');              \
+        halt();                      \
+    })

@@ -22,7 +22,7 @@ void ensure_extensions_present() {
         // TODO: Print more detailed info on what exactly extension is missing
         // but required by kernel.
         if (is_extension_implemented(required_riscv_extension[i]) == false) {
-            k_panic("a required extension is not implemented\n");
+            KERNEL_PANIC("a required extension is not implemented");
         }
     }
     printf("[OK] All needed extensions present\n");

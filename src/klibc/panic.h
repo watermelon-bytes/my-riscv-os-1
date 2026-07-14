@@ -1,7 +1,6 @@
 #pragma once
 
 void halt();
-void k_panic(const char reason[]);
 
 #ifndef NDEBUG
     #define ASSERT(condition)                                    \
@@ -27,3 +26,11 @@ void k_panic(const char reason[]);
     #define ASSERT_WITH_MSG(exp, msg) ;
 
 #endif
+
+#define KERNEL_PANIC(...)            \
+    ({                               \
+        printf("[PANIC] halting: "); \
+        printf(__VA_ARGS__);         \
+        _putchar('\n');              \
+        halt();                      \
+    })
