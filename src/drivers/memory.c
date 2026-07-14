@@ -1,4 +1,5 @@
 #include <libfdt.h>
+#include <klibc/panic.h>
 #include <klibc/printf.h>
 #include <init_devices.h>
 #include <types.h>
@@ -20,9 +21,7 @@ int detect_memory(void* tree) {
             tree, mem_node_offset, "device_type", memory_str, prop_len);
     }
 #ifndef NDEBUG
-    printf("-------------------\n");
     log_detected_memory();
-    printf("-------------------\n");
 #endif
     return 0;
 }
@@ -41,22 +40,26 @@ int extract_ram_region_info(const void* device_tree, int node_offset) {
     __auto_type buf = &ram_regions_[ram_regions_index_++];
     const __auto_type res =
         parse_reg(device_tree, node_offset, &buf->physicaddr, &buf->space_size);
+    ASSERT(buf->space_size != 0);
     return res;
 }
 
-#ifndef NDEBUG
 void log_detected_memory() {
+#ifndef NDEBUG
+    const char breaker[] = "===========================\n";
+    printf(breaker);
     printf("detected RAM:\n");
     for (uint32_t i = 0; i < ram_regions_index_; ++i) {
         printf("[region %i] start = at 0x%x, size = %lu B\n", i + 1,
                ram_regions_[i].physicaddr, ram_regions_[i].space_size);
     }
-}
+    printf(breaker);
 #endif
+}
 
 i32 get_total_mem() {
     int counter = 0;
-    for (int i = 0; i < MAX_MEM_REGIONS; ++i) {
+    for (int i = 0; i < ram_regions_index_; ++i) {
         counter += ram_regions_[i].space_size;
     }
     return counter;

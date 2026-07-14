@@ -1,8 +1,4 @@
-Language: Cpp
-BasedOnStyle: google
+Language: C
+BasedOnStyle: Google
 IndentWidth: 4
-AccessModifierOffset: -4 
-PointerAlignment: Left 
-AlignTrailingComments: true
-
-# AlwaysBreakAfterDefinitionReturnType: ExceptShortType
+IndentPPDirectives: BeforeHash
