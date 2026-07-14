@@ -2,6 +2,7 @@
 #include <klibc/printf.h>
 #include <init_devices.h>
 #include <types.h>
+#include <utils.h>
 #include <drivers/memory.h>
 
 int detect_memory(void* tree) {
