@@ -1,11 +1,10 @@
+#include <drivers/memory.h>
+#include <drivers/uart.h>
 #include <init_devices.h>
 #include <klibc/panic.h>
-#include <utils.h>
 #include <klibc/printf.h>
-#include <utils.h>
-#include <drivers/uart.h>
 #include <libfdt.h>
-#include <drivers/memory.h>
+#include <utils.h>
 
 static bool configured = false;
 _Bool check_device_tree(const void* devtree) {
@@ -134,7 +133,7 @@ int parse_reg(void* tree, const int node, uintptr_t* begin_addr_buf,
     if (len < 0) return len;
     // address
 
-    int parent = RETURN_IF_LESS_THAN_ZERO(fdt_parent_offset(tree, node));
+    const int parent = RETURN_IF_LESS_THAN_ZERO(fdt_parent_offset(tree, node));
     uint address_cells =
         RETURN_IF_LESS_THAN_ZERO(fdt_address_cells(tree, parent));
     *begin_addr_buf = fetch_lowest_(reg, address_cells);
@@ -143,17 +142,8 @@ int parse_reg(void* tree, const int node, uintptr_t* begin_addr_buf,
     // size
     const uint size_cells =
         RETURN_IF_LESS_THAN_ZERO(fdt_size_cells(tree, parent));
-    printf("size_cells = %i\n");
+    printf("size_cells = %i\n", size_cells);
     *size_buf = fetch_lowest_(reg, size_cells);
-    /* TODO: How to handle the case when the node has no #size-cells field? How
-     * do we distinguish whether "1" means that there IS that field and its
-     * value is 1, or it's just what libfdt returns by default? */
-
-    // NOTE: from Devicetree Specification:
-    /* The #address-cells and #size-cells properties are not inherited from
-     * ancestors in the devicetree. They shall be explicitly defined. A
-     * DTSpec-compliant boot program shall supply #address-cells and #size-cells
-     * on all nodes that have children. */
 
     /* Since reg field may contain more than one entry, but they all can't be
      * handled in a single call because the function knows only one pair of

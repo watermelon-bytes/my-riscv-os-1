@@ -27,10 +27,16 @@ u32 byte_swap_32(const u32 original);
 
 #pragma once
 #if defined(__GNUC__) || defined(__clang__)
-// GCC and Clang use function attributes
-#define SET_OPTIMIZATION_LVL(lvl) __attribute__((optimize("O" #lvl)))
+
+    #ifndef NDEBUG
+        #define SET_OPTIMIZATION_LVL(lvl)
+    #else
+        #define SET_OPTIMIZATION_LVL(lvl) __attribute__((optimize("O" #lvl)))
+    #endif
+
 #else
-#define SET_OPTIMIZATION_LVL(lvl)
+    #define SET_OPTIMIZATION_LVL(lvl)
+//
 #endif
 
 #define countof(array) (sizeof(array) / sizeof(array[0]))
