@@ -1,17 +1,18 @@
 #include <limits.h>
 #include <stdint.h>
-#include <utils.h>
 #include <types.h>
+#include <utils.h>
 
 _Static_assert(
     sizeof(void*) == sizeof(uintptr_t),
     "Impossible error: sizeof(uintptr_t) != sizeof(void*)");  // who knows
 
 #ifndef NDEBUG
-#include <klibc/printf.h>
-#define LOG_CALL ({ printf("function %s was called\n", __PRETTY_FUNCTION__); })
+    #include <klibc/printf.h>
+    #define LOG_CALL \
+        ({ printf("function %s was called\n", __PRETTY_FUNCTION__); })
 #else
-#define LOG_CALL ;
+    #define LOG_CALL ;
 #endif
 // relying on __builtin_'s may look like a weakness
 // but it also may be a good time saving and code reusing
@@ -24,8 +25,11 @@ void* memcpy(void* __restrict dest, const void* __restrict src, size_t n) {
 
 SET_OPTIMIZATION_LVL(2)
 void* memset(void* s, int c, size_t n) {
-    LOG_CALL;
-    return __builtin_memset(s, c, n);
+    char* ptr = (char*)s;
+    while (n-- > 0) {
+        *ptr++ = c;
+    }
+    return s;
 }
 
 SET_OPTIMIZATION_LVL(2)

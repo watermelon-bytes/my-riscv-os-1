@@ -1,4 +1,5 @@
-#include <drivers/memory.h>
+#include "memory.h"
+
 #include <init_devices.h>
 #include <klibc/panic.h>
 #include <klibc/printf.h>

@@ -1,9 +1,9 @@
-#include <drivers/memory.h>
 #include <drivers/uart.h>
 #include <init_devices.h>
 #include <klibc/panic.h>
 #include <klibc/printf.h>
 #include <libfdt.h>
+#include <mem/memory.h>
 #include <utils.h>
 
 static bool configured = false;
