@@ -14,11 +14,11 @@ void halt();
                 halt();                                          \
             }                                                    \
         })
-    #define ASSERT_WITH_MSG(exp, msg) \
-        ({                            \
-            if (!(exp)) {             \
-                k_panic(msg);         \
-            }                         \
+    #define ASSERT_WITH_MSG(exp, ...)      \
+        ({                                 \
+            if (!(exp)) {                  \
+                KERNEL_PANIC(__VA_ARGS__); \
+            }                              \
         })
 #else
 

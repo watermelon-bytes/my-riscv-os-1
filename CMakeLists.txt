@@ -12,6 +12,7 @@ add_subdirectory(libfdt)
 
 file(GLOB_RECURSE SOURCES
     "src/**.c"
+    "src/drivers/*.c"
     "src/**.S"
 )
 add_executable(${PROJECT_NAME} ${SOURCES})

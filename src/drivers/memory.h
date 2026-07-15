@@ -1,9 +1,9 @@
 #pragma once
-#include <types.h>
-#include <stdint.h>
+#include <klibc/types.h>
 #include <limits.h>
-#include <stddef.h>
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #define MAX_MEM_REGIONS 16
 

@@ -1,8 +1,8 @@
 #pragma once
 #include <stdbool.h>
-#include <types.h>
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
+#include <types.h>
 _Bool check_device_tree(void const*);
 
 int init_devices(void* fdt);
@@ -49,7 +49,7 @@ int configure_field_size(void* fdt, int root);
  * Requires configure_field_size to be called beforehand as it relies on values
  * stored in variables by configure_field_size.
  */
-int parse_reg(void* tree, const int node, uintptr_t* begin_buf,
+int parse_reg(const void* tree, const int node, uintptr_t* begin_buf,
               size_t* size_buf);
 
 /**
@@ -77,9 +77,9 @@ const u32* fetch_size_field(register_t* result, const u32* cells);
 
 int get_sizeof_one_descriptor();
 
-int detect_memory(void* fdt);
-int detect_power_config(void* fdt);
-int parse_systems_on_chip(void* fdt);
+int detect_memory(const void* fdt);
+int detect_power_config(const void* fdt);
+int parse_systems_on_chip(const void* fdt);
 
 enum parsing_error {
     NO_SUCH_FIELD,

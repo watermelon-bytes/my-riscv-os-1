@@ -1,12 +1,12 @@
-#include <libfdt.h>
+#include <drivers/memory.h>
+#include <init_devices.h>
 #include <klibc/panic.h>
 #include <klibc/printf.h>
-#include <init_devices.h>
+#include <libfdt.h>
 #include <types.h>
 #include <utils.h>
-#include <drivers/memory.h>
 
-int detect_memory(void* tree) {
+int detect_memory(const void* tree) {
     const char memory_str[] = "memory";
     const int prop_len = countof(memory_str);
     int mem_node_offset = fdt_node_offset_by_prop_value(tree, -1, "device_type",
@@ -58,8 +58,8 @@ void log_detected_memory() {
 }
 
 i32 get_total_mem() {
-    int counter = 0;
-    for (int i = 0; i < ram_regions_index_; ++i) {
+    uint counter = 0;
+    for (uint i = 0; i < ram_regions_index_; ++i) {
         counter += ram_regions_[i].space_size;
     }
     return counter;
