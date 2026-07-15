@@ -131,9 +131,9 @@ int parse_reg(const void* tree, const int node, uintptr_t* begin_addr_buf,
     int len;
     const u32* reg = fdt_getprop(tree, node, "reg", &len);
     if (len < 0) return len;
-    // address
-
+    // get #size-cells and #address-cells from parent node
     const int parent = RETURN_IF_LESS_THAN_ZERO(fdt_parent_offset(tree, node));
+
     uint address_cells =
         RETURN_IF_LESS_THAN_ZERO(fdt_address_cells(tree, parent));
     *begin_addr_buf = fetch_lowest_(reg, address_cells);
@@ -142,7 +142,6 @@ int parse_reg(const void* tree, const int node, uintptr_t* begin_addr_buf,
     // size
     const uint size_cells =
         RETURN_IF_LESS_THAN_ZERO(fdt_size_cells(tree, parent));
-    printf("size_cells = %i\n", size_cells);
     *size_buf = fetch_lowest_(reg, size_cells);
 
     /* Since reg field may contain more than one entry, but they all can't be
