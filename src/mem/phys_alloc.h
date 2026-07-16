@@ -43,8 +43,8 @@ enum : register_t {
  *
  * Conclusion: Bitmap wins
  */
-extern uintptr_t _kernel_physical_start;
-extern uintptr_t _kernel_physical_end;
+extern u8 _kernel_physical_start[];
+extern u8 _kernel_physical_end[];
 
 // Places and initializes a page bitmap in first available page
 // Assumes that the only borrowed memory is where kernel image is placed - i.e.

@@ -47,14 +47,15 @@ void init_phys_allocator() {
     for (uint i = 0; i < ram_regions_index; ++i) {
         __auto_type const region = &ram_regions[i];
         intptr_t tmp = (intptr_t)_kernel_physical_start - region->physicaddr;
+        LOG_VARIABLE(_kernel_physical_start, "0x%p");
         if (tmp >= bitmap_size) {
             bitmap = (u8*)PAGE_ALIGNED(region->physicaddr);
             break;
         }
         tmp = PAGE_ALIGNED(region->physicaddr + region->space_size) -
               (intptr_t)_kernel_physical_end;
+        LOG_VARIABLE(_kernel_physical_end, "0x%p");
         if (tmp >= bitmap_size) {
-            LOG_VARIABLE(_kernel_physical_end, "0x%x");
             bitmap = (u8*)_kernel_physical_end;
             break;
         }
@@ -68,8 +69,8 @@ void init_phys_allocator() {
     // word_aligned_memset(bitmap, 0, bitmap_size);
     available_pages_count = unborrowed >> PAGE_OFFSET_BITS;
     printf(
-        "Bitmap successfully located at 0x%x, size = 0x%x; %i pages "
+        "Bitmap successfully located at 0x%p, size = %i; %i pages "
         "available\n",
-        (uintptr_t)bitmap, (unsigned)bitmap_size, available_pages_count);
+        (void*)bitmap, (unsigned)bitmap_size, available_pages_count);
     // TODO: Mark kernel pages as "used"
 }
