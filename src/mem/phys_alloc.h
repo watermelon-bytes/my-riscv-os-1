@@ -1,5 +1,11 @@
-
+#pragma once
 #include <types.h>
+
+#if __STDC_VERSION__ >= 202311l
+constexpr uint PAGE_SIZE = 4096;
+#else
+enum { PAGE_SIZE = 4096 };
+#endif
 
 /* TODO: Make a physical page allocator, which returns a signle new free page in
  * RAM or -1 if can't find it.
@@ -24,8 +30,17 @@
  * + possible easier to implement and manage
  * + does not depend on total count of pages
  * - requires **considerably** more runtime initialization
+ *
+ * Conclusion: Bitmap wins
  */
 extern u8 _kernel_physical_start[];
 extern u8 _kernel_physical_end[];
 
-void init_phys_mem_allocator();
+// Places and initializes a page bitmap in first available page
+// Assumes that the only borrowed memory is where kernel image is placed - i.e.
+// range [_kernel_physical_start -> _kernel_physical_end]
+void init_phys_allocator();
+
+void free_physical_page(void*);
+
+void* allocate_page();
