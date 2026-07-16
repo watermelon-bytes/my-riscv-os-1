@@ -1,5 +1,5 @@
 .align 4
-.section .init
+.section .entry
 
 .type _entry, @function
 .global _entry
