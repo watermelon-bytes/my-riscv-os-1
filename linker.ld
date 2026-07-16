@@ -27,4 +27,5 @@ SECTIONS {
 		*(.data);
 	}
     PROVIDE(_kernel_physical_end = .);
+    PROVIDE(KERNEL_SIZE = _kernel_physical_end - _kernel_physical_start);
 }
