@@ -14,7 +14,6 @@ int detect_memory(const void* tree) {
                                                         memory_str, prop_len);
     // Iterate through all nodes with "device_type"="memory"
     while (mem_node_offset >= 0) {
-        printf("parsing meta information on physical memory layout...\n");
         if (extract_ram_region_info(tree, mem_node_offset) == -1) {
             return -1;
         }
@@ -51,8 +50,9 @@ void log_detected_memory() {
     printf(breaker);
     printf("detected RAM:\n");
     for (uint32_t i = 0; i < ram_regions_index_; ++i) {
-        printf("[region %i] start = at 0x%x, size = %lu B\n", i + 1,
-               ram_regions_[i].physicaddr, ram_regions_[i].space_size);
+        const __auto_type r = &ram_regions_[i];
+        printf("RAM region %i: address range [0x%x, 0x%x], size = %i B\n", i,
+               r->physicaddr, r->physicaddr + r->space_size, r->space_size);
     }
     printf(breaker);
 #endif
