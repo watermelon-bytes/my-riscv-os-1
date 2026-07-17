@@ -11,9 +11,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_subdirectory(libfdt)
 
 file(GLOB_RECURSE SOURCES
-    "src/**.c"
+    "src/*.c"
     "src/drivers/*.c"
-    "src/**.S"
+    "src/*.S"
 )
 add_executable(${PROJECT_NAME} ${SOURCES})
 
@@ -22,6 +22,7 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 #     C_STANDARD_REQUIRED YES
 #     C_EXTENSIONS NO
 # )
+
 # Link against libfdt
 target_link_libraries(${PROJECT_NAME} PRIVATE fdt)
 
@@ -44,7 +45,8 @@ target_compile_options(${PROJECT_NAME} PRIVATE
     -Wall -Wextra
     -mcmodel=medany
     -ffreestanding
-    -march=rv32imacd_zicsr
+    -nostdlib
+    -march=rv32imad_zicsr
     -nostartfiles
     -mabi=ilp32d
 )
@@ -52,23 +54,22 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 set(QEMU_FLAGS
     -machine virt
     -bios none
+    -cpu rv32,c=off
     -kernel $<TARGET_FILE:${PROJECT_NAME}>
-    -serial mon:stdio
 )
 
 add_custom_target(qemu-run
     COMMAND qemu-system-riscv32
         ${QEMU_FLAGS}
+        -serial mon:stdio
     DEPENDS ${PROJECT_NAME}
     USES_TERMINAL
     COMMENT "Running kernel in QEMU (RISC-V 32-bit virt machine)"
 )
-
-
 add_custom_target(qemu-debug
     COMMAND qemu-system-riscv32
         ${QEMU_FLAGS}
-        -S -s
+        -monitor stdio
     DEPENDS ${PROJECT_NAME}
     USES_TERMINAL
     COMMENT "Running kernel in QEMU [waiting for GDB]"
