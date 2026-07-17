@@ -56,7 +56,7 @@ void init_phys_allocator() {
               (intptr_t)_kernel_physical_end;
         LOG_VARIABLE(_kernel_physical_end, "0x%p");
         if (tmp >= bitmap_size) {
-            bitmap = (u8*)_kernel_physical_end;
+            bitmap = _kernel_physical_end;
             break;
         }
     }
@@ -66,7 +66,7 @@ void init_phys_allocator() {
             "can't find continuous space for bitmap; non-continuous page "
             "bitmaps not supported yet");
     }
-    // word_aligned_memset(bitmap, 0, bitmap_size);
+    word_aligned_memset(bitmap, 0, bitmap_size);
     available_pages_count = unborrowed >> PAGE_OFFSET_BITS;
     printf(
         "Bitmap successfully located at 0x%p, size = %i; %i pages "
