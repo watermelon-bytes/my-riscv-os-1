@@ -11,11 +11,8 @@ void enable_interrupts() {
     WRITE_CSR(mstatus, curr_mstatus_value | MSTATUS_MIE);
 }
 
-__attribute__((used, noreturn)) void handle() {
-    while (true) {
-        asm volatile("wfi;");
-    }
-    __builtin_unreachable();
+__attribute__((used, noreturn, naked)) void handle() {
+    asm volatile("1: wfi;  j 1b;");
 }
 
 void setup_interrupt_handler() {

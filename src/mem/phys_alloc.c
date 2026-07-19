@@ -66,11 +66,12 @@ void init_phys_allocator() {
             "can't find continuous space for bitmap; non-continuous page "
             "bitmaps not supported yet");
     }
-    word_aligned_memset(bitmap, 0, bitmap_size);
     available_pages_count = unborrowed >> PAGE_OFFSET_BITS;
     printf(
-        "Bitmap successfully located at 0x%p, size = %i; %i pages "
+        "Bitmap successfully located at 0x%p - 0x%p, size = %i; %i pages "
         "available\n",
-        (void*)bitmap, (unsigned)bitmap_size, available_pages_count);
+        (void*)bitmap, (void*)(bitmap + bitmap_size), (unsigned)bitmap_size,
+        available_pages_count);
+    word_aligned_memset(bitmap, 0, bitmap_size);
     // TODO: Mark kernel pages as "used"
 }
