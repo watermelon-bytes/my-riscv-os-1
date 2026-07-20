@@ -1,3 +1,4 @@
+#include <klibc/panic.h>
 #include <limits.h>
 #include <stdint.h>
 #include <types.h>
@@ -123,4 +124,18 @@ u32 byte_swap_32(const u32 original) {
            ((original & BYTE_MASK(3)) >> 24);
 #undef BYTE_MASK
 }
+
+// WARNING: Only use if count is known to be divisible by machine word size (in
+// our case, 4)
+void word_aligned_memset(void* p, const register_t num, size_t count) {
+    ASSERT(count % sizeof(register_t) == 0);
+    ASSERT((uintptr_t)p % sizeof(register_t) == 0);
+    ASSERT(p != 0x0);
+    // probably should leave those asserts because they're debug-only and may
+    // help catch something weird
+    for (register_t* ptr = p; count > 0; count -= sizeof(register_t)) {
+        *ptr++ = num;
+    }
+}
+
 #undef LOG_CALL
