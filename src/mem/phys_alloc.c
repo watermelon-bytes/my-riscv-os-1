@@ -22,15 +22,27 @@ size_t get_kernel_size() {
 #define WORD_ALIGNED(x) \
     ((register_t*)((uintptr_t)(x) & ~(sizeof(register_t) - 1)))
 
-static void mark_as_used(const uint first_page_index, size_t total_pages) {
-    LOG_VARIABLE(bitmap_size * CHAR_BIT, "%i");
-    LOG_VARIABLE(first_page_index, "%u");
-    LOG_VARIABLE(total_pages, "%lu");
-    ASSERT(first_page_index + total_pages < bitmap_size * CHAR_BIT);
-    ASSERT(bitmap != NULL);
+static int find_page_by_physical_addr(const void* page) {
+    uintptr_t page_ptr = (uintptr_t)page & (~OFFSET_MASK);
+    uint counter = 0;
+    for (uint i = 0; i < ram_regions_index; ++i) {
+        const __auto_type size = ram_regions[i].space_size;
+        const __auto_type phys_addr = ram_regions[i].physicaddr;
+        if (page_ptr >= phys_addr && page_ptr <= phys_addr + size) {
+            const size_t diff = page_ptr - phys_addr;
+            return counter + (diff >> PAGE_OFFSET_BITS);
+        }
+        counter += ram_regions[i].space_size / PAGE_SIZE;
+    }
+    return -1;
+}
 
-    const uint offset = first_page_index % CHAR_BIT;
-    register_t* curr_word = WORD_ALIGNED(&bitmap[first_page_index / CHAR_BIT]);
+static void mark_as_used(const void* page, size_t total_pages) {
+    ASSERT(bitmap != NULL);
+    const int ppn = find_page_by_physical_addr(page);
+    ASSERT(ppn + total_pages < bitmap_size);
+    const uint offset = ppn % CHAR_BIT;
+    register_t* curr_word = WORD_ALIGNED(&bitmap[ppn / CHAR_BIT]);
     if (offset + total_pages < BITS_COUNT(register_t)) {
         const register_t chunk = UINTPTR_MAX << (offset + total_pages);
         *curr_word |= chunk >> offset;
@@ -105,7 +117,6 @@ void init_phys_allocator() {
         "[OK] Bitmap successfully located at 0x%p - 0x%p; %i pages available\n",
         bitmap, (bitmap + bitmap_size), available_pages_count);
     word_aligned_memset(bitmap, 0, bitmap_size);
-    mark_as_used((uintptr_t)_kernel_physical_start >> PAGE_OFFSET_BITS,
-                 get_kernel_size());
+    mark_as_used(_kernel_physical_start, get_kernel_size() >> PAGE_OFFSET_BITS);
     printf("[OK] Initialized bitmap\n");
 }
