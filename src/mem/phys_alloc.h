@@ -15,7 +15,7 @@ enum : register_t {
     OFFSET_MASK = ~PAGE_MASK,
 };
 #endif
-#define PAGE_ALIGNED(x) ((x) & PAGE_MASK)
+#define PAGE_ALIGNED(x) ((uintptr_t)(x) & PAGE_MASK)
 
 /* TODO: Make a physical page allocator, which returns a signle new free page in
  * RAM or -1 if can't find it.
@@ -51,6 +51,7 @@ extern u8 _kernel_physical_end[];
 // range [_kernel_physical_start -> _kernel_physical_end]
 // Relies on RAM info provided by Device Tree and parsed by functions in
 // memory.c
+// Must be called only after `detect_memory`.
 void init_phys_allocator();
 
 void free_physical_page(void*);
