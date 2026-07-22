@@ -23,11 +23,11 @@ size_t get_kernel_size() {
     ((register_t*)((uintptr_t)(x) & ~(sizeof(register_t) - 1)))
 
 static int find_page_by_physical_addr(const void* page) {
-    uintptr_t page_ptr = (uintptr_t)page & (~OFFSET_MASK);
+    const uintptr_t page_ptr = (uintptr_t)page & (~OFFSET_MASK);
     uint counter = 0;
     for (uint i = 0; i < ram_regions_index; ++i) {
-        const __auto_type size = ram_regions[i].space_size;
-        const __auto_type phys_addr = ram_regions[i].physicaddr;
+        const size_t size = ram_regions[i].space_size;
+        const uintptr_t phys_addr = ram_regions[i].physicaddr;
         if (page_ptr >= phys_addr && page_ptr <= phys_addr + size) {
             const size_t diff = page_ptr - phys_addr;
             return counter + (diff >> PAGE_OFFSET_BITS);
@@ -38,9 +38,15 @@ static int find_page_by_physical_addr(const void* page) {
 }
 
 static void mark_as_used(const void* page, size_t total_pages) {
+    // TODO: Instead of ASSERT's, return error code
     ASSERT(bitmap != NULL);
     const int ppn = find_page_by_physical_addr(page);
+    ASSERT(ppn >= 0);
     ASSERT(ppn + total_pages < bitmap_size);
+    printf(
+        "marking %d pages as used, starting from PPN %x (starting address = "
+        "0x%p, ends at 0x%p)\n",
+        total_pages, ppn, page, (uintptr_t)page + total_pages * PAGE_SIZE);
     const uint offset = ppn % CHAR_BIT;
     register_t* curr_word = WORD_ALIGNED(&bitmap[ppn / CHAR_BIT]);
     if (offset + total_pages < BITS_COUNT(register_t)) {
@@ -91,16 +97,17 @@ void init_phys_allocator() {
     LOG_VARIABLE(bitmap_size, "%i");
     for (uint i = 0; i < ram_regions_index; ++i) {
         __auto_type const region = &ram_regions[i];
-        intptr_t tmp = (intptr_t)_kernel_physical_start - region->physicaddr;
+        intptr_t free_space_sz =
+            (intptr_t)_kernel_physical_start - region->physicaddr;
         LOG_VARIABLE(_kernel_physical_start, "0x%p");
-        if (tmp >= bitmap_size) {
+        if (free_space_sz >= bitmap_size) {
             bitmap = (u8*)PAGE_ALIGNED(region->physicaddr);
             break;
         }
-        tmp = PAGE_ALIGNED(region->physicaddr + region->space_size) -
-              (intptr_t)_kernel_physical_end;
+        free_space_sz = PAGE_ALIGNED(region->physicaddr + region->space_size) -
+                        (intptr_t)_kernel_physical_end;
         LOG_VARIABLE(_kernel_physical_end, "0x%p");
-        if (tmp >= bitmap_size) {
+        if (free_space_sz >= bitmap_size) {
             bitmap = _kernel_physical_end;
             break;
         }
