@@ -1,4 +1,6 @@
 #pragma once
+#include <klibc/printf.h>
+#include <stdbool.h>
 
 void halt();
 
