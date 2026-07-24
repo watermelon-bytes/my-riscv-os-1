@@ -46,7 +46,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE
     -mcmodel=medany
     -ffreestanding
     -nostdlib
-    -march=rv32imad_zicsr
+    -march=rv32imacd_zicsr
     -nostartfiles
     -mabi=ilp32d
 )
@@ -54,7 +54,6 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 set(QEMU_FLAGS
     -machine virt
     -bios none
-    -cpu rv32,c=off
     -kernel $<TARGET_FILE:${PROJECT_NAME}>
 )
 
@@ -66,7 +65,17 @@ add_custom_target(qemu-run
     USES_TERMINAL
     COMMENT "Running kernel in QEMU (RISC-V 32-bit virt machine)"
 )
-add_custom_target(qemu-debug
+
+add_custom_target(qemu-gdb
+    COMMAND qemu-system-riscv32
+        ${QEMU_FLAGS}
+        -S -s
+    DEPENDS ${PROJECT_NAME}
+    USES_TERMINAL
+    COMMENT "Running kernel in QEMU [waiting for GDB]"
+)
+
+add_custom_target(qemu-monitor
     COMMAND qemu-system-riscv32
         ${QEMU_FLAGS}
         -monitor stdio

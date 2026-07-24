@@ -23,7 +23,7 @@ _Bool check_device_tree(const void* devtree) {
         printf("[FATAL] device tree turned out to be invalid\n");
         return false;
     }
-    printf("[OK] device tree has been verified\n");
+    printf("[OK] Device tree verified\n");
     return true;
 }
 

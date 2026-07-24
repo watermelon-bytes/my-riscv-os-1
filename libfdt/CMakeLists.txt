@@ -21,6 +21,6 @@ target_include_directories(fdt PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_compile_options(fdt PUBLIC
     -Wall -Wextra -ffreestanding -nostdlib
-    -march=rv32imad_zicsr
+    -march=rv32imacd_zicsr
     -mabi=ilp32d
 )

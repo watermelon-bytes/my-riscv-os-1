@@ -1,9 +1,8 @@
 ENTRY(_entry);
  
 . = 0x80000000;
- 
+PROVIDE(_kernel_physical_start = .);
 SECTIONS {
-    PROVIDE(_kernel_physical_start = .);
 	/* Include entry point at start of binary */
 	.text : ALIGN(4K) {
 		KEEP(*(.entry*));
@@ -11,10 +10,11 @@ SECTIONS {
 	}
 	.bss : ALIGN(4K) {
 		PROVIDE(bss_start = .);
-		*(.bss);
-		. += 4096;
+		*(.bss) *(.bss*);
+        *(.sbss) *(.sbss*);
+		. += 4K;
 		PROVIDE(stack_top = .);
-		. += 4096;
+		. += 8K;
 		PROVIDE(__global_pointer = .);
 		PROVIDE(bss_end = .);
 	}
@@ -25,7 +25,7 @@ SECTIONS {
 	}
 	.data : ALIGN(4K) {
 		*(.data);
+        . = ALIGN(4K);
 	}
     PROVIDE(_kernel_physical_end = .);
-    PROVIDE(KERNEL_SIZE = _kernel_physical_end - _kernel_physical_start);
 }

@@ -15,6 +15,5 @@ void uart_print(const char*);
 
 // Outputs a single character to UART register
 // (only lowest 8 bits of the parameter `c`)
-void putchar(int c);
-
-void _putchar(char);
+void _putchar(char c);
+#define putchar(c) _putchar((c))

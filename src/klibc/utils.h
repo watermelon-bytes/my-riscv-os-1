@@ -2,6 +2,7 @@
 #include <types.h>
 
 u32 byte_swap_32(const u32 original);
+void word_aligned_memset(void*, const register_t, size_t);
 
 #define RETURN_VAL_IF_NULL(func_call, val) \
     ({                                     \
