@@ -26,8 +26,8 @@ int detect_memory(const void* tree) {
     return 0;
 }
 
-struct space ram_regions[MAX_MEM_REGIONS] = {};
-uint ram_regions_index = 0;
+static struct ram_descriptor ram_regions[MAX_MEM_REGIONS] = {};
+static uint ram_regions_index = 0;
 
 // TODO: replace raw `int` with `enum` or something
 int extract_ram_region_info(const void* device_tree, int node_offset) {
@@ -61,4 +61,11 @@ i32 get_total_mem() {
         counter += ram_regions[i].space_size;
     }
     return counter;
+}
+
+u32 total_memory_regions() { return ram_regions_index; }
+
+struct ram_descriptor get_memory_reg(size_t index) {
+    ASSERT(index < ram_regions_index);
+    return ram_regions[index];
 }
