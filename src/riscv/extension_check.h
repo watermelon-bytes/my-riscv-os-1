@@ -20,7 +20,8 @@ enum riscv_extensions : u32 {
 // clang-format on
 
 // Reads Machine ISA Register and if the specified extension's bit is set,
-// returns non-zero value Returns 0 if the specified extension is not present on
+// returns non-zero value
+// Returns 0 if the specified extension is not present on
 // the current machine
 bool is_extension_implemented(enum riscv_extensions);
 
