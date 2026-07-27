@@ -22,3 +22,11 @@ uint count_trailing_zeroes(unsigned long x) {
     return 32;
 }
 #endif
+
+u32 byte_swap_32(const u32 original) {
+#define BYTE_MASK(byte_no) ({ UCHAR_MAX << (CHAR_BIT * byte_no); })
+    return ((original & BYTE_MASK(0)) << 24) |
+           ((original & BYTE_MASK(1)) << 8) | ((original & BYTE_MASK(2)) >> 8) |
+           ((original & BYTE_MASK(3)) >> 24);
+#undef BYTE_MASK
+}

@@ -117,23 +117,12 @@ char* strrchr(const char* str, int ch) {
     return NULL;
 }
 
-u32 byte_swap_32(const u32 original) {
-#define BYTE_MASK(byte_no) ({ UCHAR_MAX << (CHAR_BIT * byte_no); })
-    return ((original & BYTE_MASK(0)) << 24) |
-           ((original & BYTE_MASK(1)) << 8) | ((original & BYTE_MASK(2)) >> 8) |
-           ((original & BYTE_MASK(3)) >> 24);
-#undef BYTE_MASK
-}
-
 // WARNING: Only use if count is known to be divisible by machine word size (in
 // our case, 4)
-void word_aligned_memset(void* p, const register_t num, size_t count) {
-    ASSERT(count % sizeof(register_t) == 0);
-    ASSERT((uintptr_t)p % sizeof(register_t) == 0);
-    ASSERT(p != 0x0);
+void word_aligned_memset(register_t* p, const register_t num, size_t count) {
     // probably should leave those asserts because they're debug-only and may
     // help catch something weird
-    for (register_t* ptr = p; count > 0; count -= sizeof(register_t)) {
+    for (register_t* ptr = p; count > 0; count--) {
         *ptr++ = num;
     }
 }
