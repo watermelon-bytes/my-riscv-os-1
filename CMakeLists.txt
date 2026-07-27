@@ -11,8 +11,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_subdirectory(libfdt)
 
 file(GLOB_RECURSE SOURCES
-    "src/*.c"
-    "src/drivers/*.c"
+    "src/**.c"
     "src/*.S"
 )
 add_executable(${PROJECT_NAME} ${SOURCES})
@@ -49,6 +48,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE
     -march=rv32imacd_zicsr
     -nostartfiles
     -mabi=ilp32d
+    -flto
 )
 
 set(QEMU_FLAGS
