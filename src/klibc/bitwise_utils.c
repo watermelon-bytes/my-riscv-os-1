@@ -5,9 +5,10 @@
 #include <utils.h>
 
 #if defined(__riscv_zbb)
-__attribute__((naked)) uint count_trailing_zeroes(unsigned long) {
-    asm("ctz a0, a0;"
-        "ret;");
+inline uint count_trailing_zeroes(unsigned long x) {
+    uint res;
+    asm("ctz a0, a0;" : "=r"(res) : "r"(x));
+    return res;
 }
 #else
 // TODO: Optimize with binary search or something
