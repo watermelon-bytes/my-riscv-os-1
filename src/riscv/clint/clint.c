@@ -1,9 +1,12 @@
 #include <init_devices.h>
+#include <klibc/printf.h>
 #include <klibc/utils.h>
 #include <libfdt.h>
 #include <riscv/csr_operations.h>
+#include <riscv/timer.h>
 
 #if __STDC_VERSION__ >= 202311l
+constexpr __auto_type CLINE_MSIP_OFFSET = 0x0u;
 constexpr __auto_type CLINT_MTIMECMP_OFFSET = 0x4000u;
 constexpr __auto_type CLINT_MTIME_OFFSET = 0xBFF8u;
 #else
@@ -40,3 +43,10 @@ u32 (*clint_get_mtimecmp())[2] {
 #else
 // TODO: Implement mtime / mtimecmp accesses as if native bus size is 64 bit
 #endif
+
+// Since struct riscv_timer fits into 2 registers, we may return it as value
+// (will be placed in a0-a1, accoring to the RISC-V calling convention)
+struct riscv_timer clint_init_timer() {
+    return (struct riscv_timer){.mtime_addr = clint_get_time(),
+                                .mtimecmp_addr = clint_get_mtimecmp()};
+}

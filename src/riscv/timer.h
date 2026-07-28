@@ -8,4 +8,5 @@ struct riscv_timer {
     u32 (*mtimecmp_addr)[2];
 };
 
-int discover_timer(const void* device_tree);
+extern struct riscv_timer present_timer;
+void timer_sleep(uint cycles);

@@ -3,4 +3,4 @@
 
 int discover_clint_from_dtb(const void* tree);
 
-void clint_init_timer();
+struct riscv_timer clint_init_timer();

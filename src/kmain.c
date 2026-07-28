@@ -25,8 +25,8 @@ void kmain(int hardt_id, void* device_tree) {
     printf("++++++++++++++++++++++++++++\n");
     // Will already panic if any extension missing
     ensure_extensions_present(NECESSARY_RISCV_EXTENSIONS);
-    init_interrupt_controller(device_tree);
     setup_interrupt_handler();
+    init_interrupt_controller(device_tree);
     printf("[OK] Booting on on hardware thread %i\n", hardt_id);
     if (!check_device_tree(device_tree)) {
         KERNEL_PANIC("Invalid device tree was passed");
