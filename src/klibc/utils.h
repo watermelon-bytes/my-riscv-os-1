@@ -2,7 +2,7 @@
 #include <types.h>
 
 u32 byte_swap_32(const u32 original);
-void word_aligned_memset(void*, const register_t, size_t);
+void word_aligned_memset(register_t* p, const register_t num, size_t count);
 
 #define RETURN_VAL_IF_NULL(func_call, val) \
     ({                                     \
@@ -41,3 +41,8 @@ void word_aligned_memset(void*, const register_t, size_t);
 #endif
 
 #define countof(array) (sizeof(array) / sizeof(array[0]))
+#define BITS_COUNT(x) (sizeof(x) * CHAR_BIT)
+#define WORD_SIZE ((unsigned)__riscv_xlen)
+#define WORD_ALIGNED(x) \
+    ((register_t*)((uintptr_t)(x) & ~(sizeof(register_t) - 1)))
+#define min(a, b) (a < b ? a : b)
