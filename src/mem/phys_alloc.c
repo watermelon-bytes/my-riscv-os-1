@@ -139,5 +139,11 @@ void init_phys_allocator() {
     printf("[OK] Placed bitmap at 0x%p - 0x%p\n", slots_for_bitmap,
            (u8*)slots_for_bitmap + bitmap_size);
     bitmap_init(&physical_bitmap_, slots_for_bitmap, bitmap_size);
+    bitmap_mark_as_used(&physical_bitmap_,
+                        find_page_by_physical_addr(_kernel_physical_start),
+                        get_kernel_size());
+    bitmap_mark_as_used(&physical_bitmap_,
+                        find_page_by_physical_addr(slots_for_bitmap),
+                        bitmap_size / PAGE_SIZE);
     printf("[OK] Initialized bitmap\n");
 }
