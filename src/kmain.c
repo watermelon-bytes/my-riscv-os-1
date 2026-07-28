@@ -7,12 +7,25 @@
 #include <riscv/csr_operations.h>
 #include <riscv/extension_check.h>
 #include <riscv/interrupts.h>
+#include <riscv/timer.h>
+
+#if defined(__riscv__zbb)
+    #define RISCV_OPTIONAL_ZBB RISCV_EXT_BIT_MANIPULATION
+#else
+    #define RISCV_OPTIONAL_ZBB 0
+#endif
+
+// This constant should be used to check extensions (consider moving to header
+// file?)
+const u32 NECESSARY_RISCV_EXTENSIONS =
+    RISCV_OPTIONAL_ZBB | RISCV_EXT_USER_MODE | RISCV_EXT_MUL_DIV;
 
 void kmain(int hardt_id, void* device_tree) {
     disable_interrupts();
     printf("++++++++++++++++++++++++++++\n");
     // Will already panic if any extension missing
-    ensure_extensions_present(RISCV_EXT_MUL_DIV | RISCV_EXT_USER_MODE);
+    ensure_extensions_present(NECESSARY_RISCV_EXTENSIONS);
+    init_interrupt_controller(device_tree);
     setup_interrupt_handler();
     printf("[OK] Booting on on hardware thread %i\n", hardt_id);
     if (!check_device_tree(device_tree)) {
