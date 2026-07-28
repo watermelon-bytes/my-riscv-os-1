@@ -25,7 +25,7 @@ enum {
 union mstatus_32 {
     uintptr_t raw_value_;
     // I prefer to use more verbose naming. Maybe I shouldn't do so.
-    struct {
+    __attribute__((packed)) struct {
         u32 : 1;  // reserved
         u32 supervisor_interrupt_enable : 1;
         u32 : 1;

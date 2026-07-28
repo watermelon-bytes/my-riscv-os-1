@@ -1,7 +1,7 @@
 #pragma once
 #include <types.h>
 
-enum riscv_interrupt_sources_ : reg_t {
+enum riscv_interrupt_sources : reg_t {
     // Machine-level interrupts:
     INTSRC_MACHINE_SOFTWARE = 1u << 3,
     INTSRC_MACHINE_TIMER = 1u << 7,
