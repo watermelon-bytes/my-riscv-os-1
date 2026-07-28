@@ -37,7 +37,7 @@ void bitmap_free_slot(struct bitmap* map, uint slot) {
 }
 
 void bitmap_mark_as_used(struct bitmap* bitmap, uint first_slot,
-                         size_t slots_to_mark) {
+                         i32 slots_to_mark) {
     ASSERT(bitmap != NULL);
     ASSERT(bitmap->slots_ptr != NULL);
     uint word_index = first_slot / WORD_SIZE, rem = first_slot % WORD_SIZE;
@@ -47,7 +47,7 @@ void bitmap_mark_as_used(struct bitmap* bitmap, uint first_slot,
         slots_to_mark -= rem;
     }
 
-    while (slots_to_mark > WORD_SIZE) {
+    while (slots_to_mark >= WORD_SIZE) {
         bitmap->slots_ptr[word_index] = WORD_MAX;
         slots_to_mark -= WORD_SIZE;
         ++word_index;
