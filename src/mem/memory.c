@@ -65,7 +65,7 @@ i32 get_total_mem() {
 
 u32 total_memory_regions() { return ram_regions_index; }
 
-struct ram_descriptor get_memory_reg(size_t index) {
+struct ram_descriptor get_memory_region(size_t index) {
     ASSERT(index < ram_regions_index);
     return ram_regions[index];
 }

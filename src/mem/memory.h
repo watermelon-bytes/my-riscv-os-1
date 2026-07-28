@@ -20,7 +20,7 @@ i32 get_total_mem();
 
 u32 total_memory_regions();
 
-struct ram_descriptor get_memory_reg(size_t index);
+struct ram_descriptor get_memory_region(size_t index);
 
 #ifndef NDEBUG
 void log_detected_memory();
