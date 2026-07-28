@@ -4,6 +4,7 @@
 #include <libfdt.h>
 #include <riscv/clint/clint.h>
 #include <riscv/csr_operations.h>
+#include <riscv/interrupt_sources.h>
 #include <riscv/interrupts.h>
 #include <riscv/timer.h>
 void disable_interrupts() {
@@ -35,12 +36,17 @@ void setup_interrupt_handler() {
     WRITE_CSR(mtvec, handler_address | MTVEC_MODE_DIRECT);
 
     // Allow all interrupts
-    WRITE_CSR(mie, UINT32_MAX);
+    WRITE_CSR(mie, RISCV_ALL_INTR_SOURCES_ON);
+    WRITE_CSR(mip, RISCV_ALL_INTR_SOURCES_ON);
+    printf("[OK] Enabled all interrupts\n");
 }
 
 struct riscv_timer present_timer;
 
 void init_interrupt_controller(const void* device_tree) {
     if (discover_clint_from_dtb(device_tree) != 0) {
+        // TODO:
+        present_timer = clint_init_timer();
+        printf("[OK] Discovered CLINT\n");
     }
 }

@@ -24,29 +24,23 @@ int discover_clint_from_dtb(const void* tree) {
         if (parse_reg(tree, clint_node, &clint_addr, &size) != 0) {
             return -2;
         }
+        printf("CLINT base address = %p\n", clint_addr);
+        return 0;
     }
     return -1;
 }
 
-#if __riscv_xlen == 32
-u32 (*clint_get_time())[2] {
-    return (u32(*)[2])(clint_addr + CLINT_MTIME_OFFSET);
-}
+u64* clint_get_time() { return (u64*)(clint_addr + CLINT_MTIME_OFFSET); }
 
 // Returns mtimecmp for the current hart.
-u32 (*clint_get_mtimecmp())[2] {
-    u32(*const mtimecmp_base)[2] = (void*)(clint_addr + CLINT_MTIMECMP_OFFSET);
-    const int hart_id = READ_CSR(mhartid);
-    return &mtimecmp_base[hart_id];
+u64* clint_get_mtimecmp() {
+    __auto_type mtimecmp_base = (u64*)(clint_addr + CLINT_MTIMECMP_OFFSET);
+    return &mtimecmp_base[READ_CSR(mhartid)];
 }
-
-#else
-// TODO: Implement mtime / mtimecmp accesses as if native bus size is 64 bit
-#endif
 
 // Since struct riscv_timer fits into 2 registers, we may return it as value
 // (will be placed in a0-a1, accoring to the RISC-V calling convention)
 struct riscv_timer clint_init_timer() {
-    return (struct riscv_timer){.mtime_addr = clint_get_time(),
-                                .mtimecmp_addr = clint_get_mtimecmp()};
+    return (struct riscv_timer){.mtime = clint_get_time(),
+                                .mtimecmp = clint_get_mtimecmp()};
 }
