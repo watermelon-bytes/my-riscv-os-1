@@ -22,4 +22,4 @@ int bitmap_allocate_slot(struct bitmap*);
 
 void bitmap_free_slot(struct bitmap*, uint slot);
 
-void mark_as_used(struct bitmap*, uint first_slot, size_t slots_to_mark);
+void bitmap_mark_as_used(struct bitmap*, uint first_slot, size_t slots_to_mark);
