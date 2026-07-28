@@ -15,7 +15,7 @@ enum riscv_interrupt_sources_ : reg_t {
     INTSRC_LOCAL_COUNTER_OVERFLOW = 1u << 13,
 };
 
-// All valib bits for `mip`/`mie` enabled.
+// All valid bits for `mip`/`mie` enabled.
 const reg_t RISCV_ALL_INTR_SOURCES_ON =
     INTSRC_MACHINE_EXTERNAL | INTSRC_MACHINE_TIMER | INTSRC_MACHINE_SOFTWARE |
     INTSRC_SUPERVISOR_EXTERNAL | INTSRC_SUPERVISOR_SOFTWARE |
