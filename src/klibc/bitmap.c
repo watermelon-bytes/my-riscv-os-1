@@ -3,7 +3,6 @@
 #include <klibc/bitmap.h>
 #include <klibc/panic.h>
 #include <klibc/utils.h>
-#include <limits.h>
 
 void bitmap_init(struct bitmap* map, register_t slots[], size_t size) {
     ASSERT(slots != NULL);
@@ -18,7 +17,7 @@ void bitmap_init(struct bitmap* map, register_t slots[], size_t size) {
 int bitmap_allocate_slot(struct bitmap* map) {
     ASSERT(map != NULL);
     for (size_t i = 0; i < map->total; ++i) {
-        if (map->slots_ptr[i] == UINTPTR_MAX) {
+        if (map->slots_ptr[i] == WORD_MAX) {
             continue;
         } else {
             const uint offset = count_trailing_zeroes(map->slots_ptr[i]);
@@ -35,26 +34,25 @@ void bitmap_free_slot(struct bitmap* map, uint slot) {
     return;
 }
 
-void mark_as_used(struct bitmap* bitmap, uint first_slot,
-                  size_t slots_to_mark) {
+void bitmap_mark_as_used(struct bitmap* bitmap, uint first_slot,
+                         size_t slots_to_mark) {
     ASSERT(bitmap != NULL);
     ASSERT(bitmap->slots_ptr != NULL);
     uint word_index = first_slot / WORD_SIZE, rem = first_slot % WORD_SIZE;
     if (rem) {
-        bitmap->slots_ptr[word_index] |=
-            UINTPTR_MAX >> (WORD_SIZE - first_slot);
+        bitmap->slots_ptr[word_index] |= WORD_MAX >> (WORD_SIZE - first_slot);
         word_index++;
         slots_to_mark -= rem;
     }
 
     while (slots_to_mark > WORD_SIZE) {
-        bitmap->slots_ptr[word_index] = UINTPTR_MAX;
+        bitmap->slots_ptr[word_index] = WORD_MAX;
         slots_to_mark -= WORD_SIZE;
         ++word_index;
     }
 
     if (slots_to_mark > 0) {
-        bitmap->slots_ptr[word_index] |= UINTPTR_MAX
+        bitmap->slots_ptr[word_index] |= WORD_MAX
                                          << (WORD_SIZE - slots_to_mark);
     }
 }

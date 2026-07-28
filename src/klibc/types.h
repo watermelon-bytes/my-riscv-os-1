@@ -1,4 +1,5 @@
 #pragma once
+#include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -12,4 +13,8 @@ typedef int32_t i32;
 typedef uint8_t u8;
 typedef int8_t i8;
 typedef uintptr_t register_t;
+typedef uintptr_t reg_t;
+typedef uintptr_t word_t;
 typedef unsigned char u_char;
+
+#define WORD_MAX UINTPTR_MAX
