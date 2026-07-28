@@ -9,6 +9,7 @@ void bitmap_init(struct bitmap* map, register_t slots[], size_t size) {
     if (slots == NULL || size == 0) {
         return;
     }
+    map->slots_ptr = slots;
     map->total = map->free_slots_count = size * CHAR_BIT * sizeof(slots[0]);
     map->last_freed = 0;
     word_aligned_memset(slots, 0, size);
@@ -31,6 +32,7 @@ int bitmap_allocate_slot(struct bitmap* map) {
 
 void bitmap_free_slot(struct bitmap* map, uint slot) {
     ASSERT(map->total > slot);
+
     return;
 }
 
