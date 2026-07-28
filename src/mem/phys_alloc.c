@@ -141,7 +141,7 @@ void init_phys_allocator() {
     bitmap_init(&physical_bitmap_, slots_for_bitmap, bitmap_size);
     bitmap_mark_as_used(&physical_bitmap_,
                         find_page_by_physical_addr(_kernel_physical_start),
-                        get_kernel_size());
+                        get_kernel_size() / PAGE_SIZE);
     bitmap_mark_as_used(&physical_bitmap_,
                         find_page_by_physical_addr(slots_for_bitmap),
                         bitmap_size / PAGE_SIZE);
