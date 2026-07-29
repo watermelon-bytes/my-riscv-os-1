@@ -4,9 +4,17 @@
 
 struct bitmap {
     int total;
+    /**< Size of array at *slots_ptr */
+
     uint free_slots_count;
+    /**< Total zeroed bits */
+
     uint last_freed;
+    /**< Index of word in slots_ptr that (potentially) has clear bits */
+
     register_t* slots_ptr;
+    /**< Pointer to runtime-allocated array. Could have used C23 FMA but this is
+     * more backwards-compatible option */
 };
 
 /*
