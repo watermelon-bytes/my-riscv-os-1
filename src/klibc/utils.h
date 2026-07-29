@@ -42,7 +42,7 @@ void word_aligned_memset(register_t* p, const register_t num, size_t count);
 
 #define countof(array) (sizeof(array) / sizeof(array[0]))
 #define BITS_COUNT(x) (sizeof(x) * CHAR_BIT)
-#define WORD_SIZE ((unsigned)__riscv_xlen)
+#define WORD_USIZE ((unsigned)__riscv_xlen)
 #define WORD_ALIGNED(x) \
     ((register_t*)((uintptr_t)(x) & ~(sizeof(register_t) - 1)))
 #define min(a, b) (a < b ? a : b)

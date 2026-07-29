@@ -18,3 +18,4 @@ typedef uintptr_t word_t;
 typedef unsigned char u_char;
 
 #define WORD_MAX UINTPTR_MAX
+#define WORD_SIZE (__riscv_xlen)
