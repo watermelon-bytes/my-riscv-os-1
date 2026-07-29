@@ -4,8 +4,8 @@
 #include <libfdt.h>
 #include <riscv/clint/clint.h>
 #include <riscv/csr_operations.h>
-#include <riscv/interrupt_sources.h>
-#include <riscv/interrupts.h>
+#include <riscv/interrupts/interrupt_sources.h>
+#include <riscv/interrupts/interrupts.h>
 #include <riscv/timer.h>
 
 void disable_interrupts() {
