@@ -1,5 +1,5 @@
 #pragma once
-#include <riscv/interrupts.h>
+#include <riscv/interrupts/interrupts.h>
 
 int discover_clint(const void* tree);
 

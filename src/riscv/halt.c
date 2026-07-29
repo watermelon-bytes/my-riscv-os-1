@@ -1,6 +1,6 @@
 #include <klibc/panic.h>
 #include <klibc/printf.h>
-#include <riscv/interrupts.h>
+#include <riscv/interrupts/interrupts.h>
 
 void halt() {
     disable_interrupts();

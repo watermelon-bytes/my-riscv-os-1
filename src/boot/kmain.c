@@ -6,7 +6,7 @@
 #include <mem/phys_alloc.h>
 #include <riscv/csr_operations.h>
 #include <riscv/extension_check.h>
-#include <riscv/interrupts.h>
+#include <riscv/interrupts/interrupts.h>
 #include <riscv/timer.h>
 
 #if defined(__riscv__zbb)
@@ -33,7 +33,6 @@ void kmain(int hardt_id, void* device_tree) {
     }
     detect_memory(device_tree);
     init_phys_allocator();
-    // init_uart(device_tree);
     printf("[FINISHED] Nothing to do left: halting\n");
     /* WARNING: printf, which relies on uart_putchar, is called multiple times
      * before init_uart. Works in QEMU because I hardcoded the UART address, but
