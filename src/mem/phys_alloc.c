@@ -49,13 +49,13 @@ static void* find_physical_addr_of_page(uint ppn) {
     return NULL;
 }
 
-static void mark_as_used(const void* page, size_t total_pages) {
+static void ppn_borrow_pages(const void* page, size_t total_bytes) {
     // TODO: Instead of ASSERT's, return error code
     const int ppn = physic_addr_to_ppn(page);
-    bitmap_mark_as_used(&physical_bitmap_, ppn, total_pages);
+    bitmap_mark_as_used(
+        &physical_bitmap_, ppn,
+        total_bytes / PAGE_SIZE + (total_bytes % PAGE_SIZE ? 1 : 0));
 }
-#undef BITS_COUNT
-#undef WORD_ALIGNED
 
 void init_phys_allocator() {
     /* ensure we're called AFTER detect_memory() */
@@ -124,11 +124,8 @@ void init_phys_allocator() {
     printf("[OK] Placed bitmap at 0x%p - 0x%p\n", slots_for_bitmap,
            (u8*)slots_for_bitmap + bitmap_size);
     bitmap_init(&physical_bitmap_, slots_for_bitmap, bitmap_size);
-    bitmap_mark_as_used(&physical_bitmap_,
-                        physic_addr_to_ppn(_kernel_physical_start),
-                        get_kernel_size() / PAGE_SIZE);
-    bitmap_mark_as_used(&physical_bitmap_, physic_addr_to_ppn(slots_for_bitmap),
-                        bitmap_size / PAGE_SIZE);
+    ppn_borrow_pages(_kernel_physical_start, get_kernel_size());
+    ppn_borrow_pages(slots_for_bitmap, bitmap_size);
     printf("[OK] Initialized bitmap\n");
 }
 
