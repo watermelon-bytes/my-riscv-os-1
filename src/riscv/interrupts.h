@@ -50,14 +50,24 @@ union mstatus_32 {
 
 union mstatush_32 {};
 
-enum mtvec_mode_field { MTVEC_MODE_DIRECT, MTVEC_MODE_VECTORED };
+union mstatus_64 {
+    u64 raw_value;
+    struct {
+        union mstatus_32 lo;
+        union mstatush_32 hi;
+    };
+};
 
 union mtrap_vector {
-    register_t _raw_value;
+    register_t raw_value;
     struct {
-        register_t mode : 2;
-        register_t base : sizeof(uintptr_t) - 2;
+        enum mtvec_mode_field {
+            MTVEC_MODE_DIRECT,
+            MTVEC_MODE_VECTORED
+        } mode : 2;
+        register_t : 0;
     };
+    void* base;
 };
 
 _Static_assert(sizeof(union mtrap_vector) == sizeof(register_t),

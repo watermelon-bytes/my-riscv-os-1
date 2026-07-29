@@ -32,9 +32,11 @@ void setup_interrupt_handler() {
         "csrw medeleg, zero;");
     ASSERT_WITH_MSG((uintptr_t)&handle % 4 == 0,
                     "Handler address is not aligned!");
-    __auto_type handler_address = (uintptr_t)&handle;
+    union mtrap_vector mtvec;
+    mtvec.mode = MTVEC_MODE_DIRECT;
+    mtvec.base = &handle;
     // Specify handler address
-    WRITE_CSR(mtvec, handler_address | MTVEC_MODE_DIRECT);
+    WRITE_CSR(mtvec, mtvec.raw_value);
 
     // Allow all interrupts
     WRITE_CSR(mie, RISCV_ALL_INTR_SOURCES_ON);
