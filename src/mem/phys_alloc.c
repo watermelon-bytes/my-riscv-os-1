@@ -37,9 +37,22 @@ static int physic_addr_to_ppn(const void* page) {
     return -1;
 }
 
+/*
+ * Returns physical address for the specified Physical Page Number.
+ * The reason why this isn't just a bitwise right-shift is that since there
+ * might be multiple regions of RAM, you can't simply take one base physical
+ * address: the bitmap places regions ordered from the lowest address to the
+ * highest, but doesn't allocate bits the invalid space between regions.
+ * Thus, if you have one region [0x10,000 -> 0x20,000] and another [0x35,000 ->
+ * 0x45,000], then first PPN will be assigned to the page at 0x10,000; but PPN
+ * 11 (with size of page = 0x1,000) will mean the page at 0x35,000, not at
+ * 0x21,000 as this isn't a physical RAM addressable space.
+ *
+ * @ppn Number of Physical Page whose physical address is to be returned
+ */
 static void* find_physical_addr_of_page(uint ppn) {
     for (uint i = 0; i < total_memory_regions(); ++i) {
-        const __auto_type pages_in_this_reg =
+        const size_t pages_in_this_reg =
             get_memory_region(i).space_size >> PAGE_OFFSET_BITS;
         if (ppn > pages_in_this_reg) {
             return (void*)(get_memory_region(i).physicaddr +
@@ -49,12 +62,15 @@ static void* find_physical_addr_of_page(uint ppn) {
     return NULL;
 }
 
-static void ppn_borrow_pages(const void* page, size_t total_bytes) {
-    // TODO: Instead of ASSERT's, return error code
-    const int ppn = physic_addr_to_ppn(page);
-    bitmap_mark_as_used(
-        &physical_bitmap_, ppn,
-        total_bytes / PAGE_SIZE + (total_bytes % PAGE_SIZE ? 1 : 0));
+/*
+ * Marks the pages that the specified region [page_phys_addr, page_phys_addr +
+ * total_bytes) covers.
+ */
+static void ppn_borrow_pages(const void* page_phys_addr, size_t total_bytes) {
+    const int ppn = physic_addr_to_ppn(page_phys_addr);
+    const size_t pages_to_borrow =
+        total_bytes / PAGE_SIZE + (total_bytes % PAGE_SIZE ? 1 : 0);
+    bitmap_mark_as_used(&physical_bitmap_, ppn, pages_to_borrow);
 }
 
 void init_phys_allocator() {
