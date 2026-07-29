@@ -79,7 +79,6 @@ device_initializer_func get_device_initializer(const char* name) {
     return NULL;
 }
 
-const int register_width = sizeof(uintptr_t);
 static int cells_to_represent_pointer = 0;
 static int cells_to_represent_size = 0;
 
@@ -102,6 +101,7 @@ int configure_field_size(void* fdt, int parental_node) {
 // register, or UINTPTR_MAX otherwise
 SET_OPTIMIZATION_LVL(2)
 static uintptr_t fetch_lowest_(const u32* cell_ptr, uint cells_count) {
+    const int register_width = sizeof(uintptr_t);
     if (register_width >= cells_count * sizeof(u32)) {
         return *cell_ptr;
     }
