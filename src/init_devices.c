@@ -6,7 +6,6 @@
 #include <mem/memory.h>
 #include <utils.h>
 
-static bool configured = false;
 _Bool check_device_tree(const void* devtree) {
     if (devtree == NULL) return false;
 
@@ -27,7 +26,7 @@ _Bool check_device_tree(const void* devtree) {
     return true;
 }
 
-// assumes the device tree is valid
+// assumes the device tree is valid (maybe move check_device_tree() here?)
 int init_devices(void* fdt) {
     const int root = fdt_path_offset(fdt, "/");
     printf("device tree root found\n");
@@ -88,15 +87,12 @@ int get_sizeof_one_descriptor() {
     return cells_to_represent_pointer + cells_to_represent_size;
 }
 
-int configure_field_size(void* fdt, int root) {
-    if (configured) return 1;
-    cells_to_represent_size = fdt_size_cells(fdt, root);
+int configure_field_size(void* fdt, int parental_node) {
+    cells_to_represent_size = fdt_size_cells(fdt, parental_node);
     if (cells_to_represent_size < 0) return cells_to_represent_size;
 
-    cells_to_represent_pointer = fdt_address_cells(fdt, root);
+    cells_to_represent_pointer = fdt_address_cells(fdt, parental_node);
     if (cells_to_represent_pointer < 0) return cells_to_represent_pointer;
-
-    configured = true;
     return 0;
 }
 
@@ -127,7 +123,6 @@ static uintptr_t fetch_lowest_(const u32* cell_ptr, uint cells_count) {
  * index the necessary entry or store an iterator in static variable */
 int parse_reg(const void* tree, const int node, uintptr_t* begin_addr_buf,
               size_t* size_buf) {
-    if (!configured) configure_field_size(tree, fdt_path_offset(tree, "/"));
     int len;
     const u32* reg = fdt_getprop(tree, node, "reg", &len);
     if (len < 0) return len;
