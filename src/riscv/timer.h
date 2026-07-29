@@ -2,8 +2,6 @@
 #include <types.h>
 
 struct riscv_timer {
-    // Assuming little endian
-    enum { HIGHER_32BITS_OF_64, LOWER_32BITS_OF_64 };
     u64* mtime;
     u64* mtimecmp;
 };
