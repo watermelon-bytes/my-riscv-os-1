@@ -22,7 +22,7 @@ size_t get_kernel_size() {
  * @page A page-aligned pointer to page whose number is to be defined
  * Finds the corresponding page number in bitmap
  */
-static int find_page_by_physical_addr(const void* page) {
+static int physic_addr_to_ppn(const void* page) {
     const uintptr_t page_ptr = (uintptr_t)page & (~OFFSET_MASK);
     uint counter = 0;
     for (uint i = 0; i < total_memory_regions(); ++i) {
@@ -49,28 +49,11 @@ static void* find_physical_addr_of_page(uint ppn) {
     return NULL;
 }
 
-// static void mark_as_used(const void* page, size_t total_pages) {
-//     // TODO: Instead of ASSERT's, return error code
-
-//     ASSERT(bitmap.slots_ptr != NULL);
-//     const int ppn = find_page_by_physical_addr(page);
-//     ASSERT(ppn >= 0);
-//     ASSERT(ppn + total_pages < bitmap_size);
-//     const uint offset = ppn & (WORD_SIZE - 1);
-//     register_t* curr_word = &bitmap[ppn / WORD_SIZE];
-//     if (offset + total_pages < WORD_SIZE) {
-//         const register_t chunk = UINTPTR_MAX << (offset + total_pages);
-//         *curr_word |= chunk >> offset;
-//         return;
-//     }
-//     total_pages -= offset;
-//     *curr_word |= UINTPTR_MAX >> offset;
-//     for (++curr_word; total_pages >= BITS_COUNT(register_t);
-//          total_pages -= WORD_SIZE) {
-//         *curr_word++ = UINTPTR_MAX;
-//     }
-//     *curr_word |= UINTPTR_MAX << (WORD_SIZE - total_pages);
-// }
+static void mark_as_used(const void* page, size_t total_pages) {
+    // TODO: Instead of ASSERT's, return error code
+    const int ppn = physic_addr_to_ppn(page);
+    bitmap_mark_as_used(&physical_bitmap_, ppn, total_pages);
+}
 #undef BITS_COUNT
 #undef WORD_ALIGNED
 
@@ -92,7 +75,9 @@ void init_phys_allocator() {
      * image pages.
      */
     const i32 total_mem = get_total_mem();
+
     // We assume that memory amount is 4Kib-aligned
+    ASSERT(get_kernel_size() % PAGE_SIZE == 0);
     const long unborrowed = total_mem - get_kernel_size();
     if (unborrowed < (signed)PAGE_SIZE * 6) {
         KERNEL_PANIC("not enough RAM available (%u bytes only)", unborrowed);
@@ -140,10 +125,17 @@ void init_phys_allocator() {
            (u8*)slots_for_bitmap + bitmap_size);
     bitmap_init(&physical_bitmap_, slots_for_bitmap, bitmap_size);
     bitmap_mark_as_used(&physical_bitmap_,
-                        find_page_by_physical_addr(_kernel_physical_start),
+                        physic_addr_to_ppn(_kernel_physical_start),
                         get_kernel_size() / PAGE_SIZE);
-    bitmap_mark_as_used(&physical_bitmap_,
-                        find_page_by_physical_addr(slots_for_bitmap),
+    bitmap_mark_as_used(&physical_bitmap_, physic_addr_to_ppn(slots_for_bitmap),
                         bitmap_size / PAGE_SIZE);
     printf("[OK] Initialized bitmap\n");
+}
+
+void* allocate_page() {
+    const int slot = bitmap_allocate_slot(&physical_bitmap_);
+    if (slot == -1) {
+        return NULL;
+    }
+    return find_physical_addr_of_page(slot);
 }
