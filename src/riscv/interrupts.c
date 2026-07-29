@@ -7,6 +7,7 @@
 #include <riscv/interrupt_sources.h>
 #include <riscv/interrupts.h>
 #include <riscv/timer.h>
+
 void disable_interrupts() {
     union mstatus_32 mstatus = {.raw_value_ = READ_CSR(mstatus)};
     mstatus.machine_interrupt_enable = 0;
@@ -44,7 +45,7 @@ void setup_interrupt_handler() {
 struct riscv_timer present_timer;
 
 void init_interrupt_controller(const void* device_tree) {
-    if (discover_clint_from_dtb(device_tree) != 0) {
+    if (discover_clint(device_tree) != 0) {
         // TODO:
         present_timer = clint_init_timer();
         printf("[OK] Discovered CLINT\n");

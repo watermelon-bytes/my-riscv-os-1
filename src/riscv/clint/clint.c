@@ -17,7 +17,7 @@ constexpr __auto_type CLINT_MTIME_OFFSET = 0xBFF8u;
 
 static uintptr_t clint_addr;
 
-int discover_clint_from_dtb(const void* tree) {
+int discover_clint(const void* tree) {
     int clint_node = fdt_node_offset_by_compatible(tree, -1, "riscv,clint0");
     size_t size;
     if (clint_node > 0) {
