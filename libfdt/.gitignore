@@ -1,2 +1,4 @@
 libfdt.so.1
 build/*
+CMakeFiles/**
+cmake_install.cmake
