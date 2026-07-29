@@ -32,14 +32,21 @@ int bitmap_allocate_slot(struct bitmap* map) {
 
 void bitmap_free_slot(struct bitmap* map, uint slot) {
     ASSERT(map->total > slot);
-
-    return;
+    const uint word = slot / WORD_SIZE, offset = slot % WORD_SIZE;
+    const word_t snapshot = map->slots_ptr[word];
+    map->slots_ptr[word] &= ~(1 << offset);
+    if (map->slots_ptr[word] != snapshot) {
+        map->free_slots_count++;
+    }
 }
 
 void bitmap_mark_as_used(struct bitmap* bitmap, uint first_slot,
                          i32 slots_to_mark) {
     ASSERT(bitmap != NULL);
     ASSERT(bitmap->slots_ptr != NULL);
+    if (slots_to_mark < 1) {
+        return;
+    }
     uint word_index = first_slot / WORD_SIZE, rem = first_slot % WORD_SIZE;
     if (rem) {
         bitmap->slots_ptr[word_index] |= WORD_MAX >> (WORD_SIZE - first_slot);
