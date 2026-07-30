@@ -16,11 +16,11 @@ void disable_interrupts();
  */
 void enable_interrupts();
 
-enum {
-    MSTATUS_MIE = 1u << 3,
+enum riscv_privileges {
+    RISCV_PRIV_LVL_USER,
+    RISCV_PRIV_LVL_SUPERVISOR,
+    RISCV_PRIV_LVL_MACHINE = 4
 };
-
-// enum riscv_privileges {};
 
 union mstatus_32 {
     uintptr_t raw_value_;

@@ -1,3 +1,4 @@
+#pragma once
 #include <types.h>
 
 #define MCAUSE_INTERRUPT_BIT ((uint32_t)(1 << 31))
