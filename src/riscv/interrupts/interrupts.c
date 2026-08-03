@@ -4,6 +4,7 @@
 #include <libfdt.h>
 #include <riscv/clint/clint.h>
 #include <riscv/csr_operations.h>
+#include <riscv/interrupts/exception_codes.h>
 #include <riscv/interrupts/interrupt_sources.h>
 #include <riscv/interrupts/interrupts.h>
 #include <riscv/timer.h>
@@ -22,7 +23,14 @@ void enable_interrupts() {
 }
 
 __attribute__((aligned(4), noinline)) void handle() {
-    printf("Caught exception! mcause = %i\n", READ_CSR(mcause));
+    const word_t cause = READ_CSR(mcause);
+    if (cause & ~MCAUSE_INTERRUPT_BIT) {
+        printf("Caught interrupt! mcause = MCAUSE_INTERRUPT_BIT | %u\n",
+               cause & ~MCAUSE_INTERRUPT_BIT);
+    } else {
+        printf("Caught exception! mcause = %u\n", cause);
+    }
+    printf("mepc = 0x%x\n", READ_CSR(mepc));
     halt();
 }
 

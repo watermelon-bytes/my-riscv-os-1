@@ -12,7 +12,7 @@ _Bool check_device_tree(const void* devtree) {
     const int devicetree_passed = fdt_check_header(devtree);
 
     if (devicetree_passed != 0) {
-        printf("FATAL: no device tree was passed: %s \n",
+        printf("[FATAL] No device tree was passed: %s \n",
                fdt_strerror(devicetree_passed));
         return false;
     }
@@ -40,18 +40,16 @@ static uintptr_t fetch_lowest_(const u32* cell_ptr, uint cells_count) {
     // cell_ptr == cell_ptr + (size of cell * cells_count) - sizeof(uintptr_t)
     for (; cells_count > register_width / sizeof(u32); --cells_count) {
         if (*cell_ptr != 0) {
-            return UINTPTR_MAX;
+            return WORD_MAX;
         }
         cell_ptr++;
     }
     return fdt32_to_cpu(*(uintptr_t*)cell_ptr);
 }
 
-// Supports only one address-size pair in reg
-/* TODO: Return some specific value like CALL_AGAIN to notify the caller that
- * <reg> field contains more than one entry but we can't handle it because we
- * can't know where we have to store result, and add argument for caller to
- * index the necessary entry or store an iterator in static variable */
+// TODO: Now returns CALL_AGAIN if there are more than one pair of address and
+// size, but doesn't handle the case where caller needs the next values (returns
+// just the same)
 int parse_reg(const void* tree, const int node, uintptr_t* begin_addr_buf,
               size_t* size_buf) {
     int len;
