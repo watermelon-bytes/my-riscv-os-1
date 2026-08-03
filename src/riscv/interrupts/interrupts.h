@@ -19,7 +19,7 @@ void enable_interrupts();
 enum riscv_privileges {
     RISCV_PRIV_LVL_USER,
     RISCV_PRIV_LVL_SUPERVISOR,
-    RISCV_PRIV_LVL_MACHINE = 4
+    RISCV_PRIV_LVL_MACHINE = 3
 };
 
 union mstatus_32 {
