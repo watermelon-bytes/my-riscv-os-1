@@ -7,6 +7,7 @@
 #include <riscv/csr_operations.h>
 #include <riscv/extension_check.h>
 #include <riscv/interrupts/interrupts.h>
+#include <riscv/switch_to_supervisor.h>
 #include <riscv/timer.h>
 
 #if defined(__riscv__zbb)
@@ -17,8 +18,10 @@
 
 // This constant should be used to check extensions (consider moving to header
 // file?)
-const u32 NECESSARY_RISCV_EXTENSIONS =
-    RISCV_OPTIONAL_ZBB | RISCV_EXT_USER_MODE | RISCV_EXT_MUL_DIV;
+// clang-format off
+const u32 NECESSARY_RISCV_EXTENSIONS = RISCV_OPTIONAL_ZBB |
+    RISCV_EXT_USER_MODE | RISCV_EXT_MUL_DIV | RISCV_EXT_SUPERVISOR_MODE;
+// clang-format on
 
 void kmain(int hardt_id, void* device_tree) {
     disable_interrupts();
