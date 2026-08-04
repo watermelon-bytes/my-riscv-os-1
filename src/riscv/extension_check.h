@@ -19,12 +19,12 @@ enum riscv_extensions : u32 {
 };
 // clang-format on
 
-// Reads Machine ISA Register and if the specified extension's bit is set,
-// returns non-zero value
-// Returns 0 if the specified extension is not present on
-// the current machine
+/* Reads Machine ISA Register and if the specified extension's bit is set,
+ * returns non-zero value; returns 0 if the specified extension is not present
+ * on the current machine, and 1 otherwise. */
 bool is_extension_implemented(enum riscv_extensions);
 
-// Calls kernel panic the CPU if `is_extension_implemented` returns false on
-// any of `required_riscv_extension`s
+/*
+ * Panics if any of enabled bits in req are clear in the `misa` register.
+ */
 void ensure_extensions_present(const register_t req);

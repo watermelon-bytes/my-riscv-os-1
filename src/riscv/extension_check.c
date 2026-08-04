@@ -5,14 +5,12 @@
 #include <utils.h>
 
 bool is_extension_implemented(enum riscv_extensions ext) {
-    u32 misa = READ_CSR(misa);
-    return (misa & ext);
+    return READ_CSR(misa) & ext;
 }
 
 // Bitwise-OR all required extensions into one register_t and pass it here
-void ensure_extensions_present(const register_t req) {
-    u32 machine_isa = READ_CSR(misa);
-    if ((machine_isa & req) != req) {
+void ensure_extensions_present(const reg_t requested_extensions) {
+    if ((READ_CSR(misa) & requested_extensions) != requested_extensions) {
         KERNEL_PANIC("a required extension is not implemented");
     }
     printf("[OK] All needed extensions present\n");
