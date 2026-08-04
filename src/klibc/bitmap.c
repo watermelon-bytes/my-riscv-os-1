@@ -45,17 +45,18 @@ void bitmap_mark_as_used(struct bitmap* bitmap, uint first_slot,
                          i32 slots_to_mark) {
     ASSERT(bitmap != NULL);
     ASSERT(bitmap->slots_ptr != NULL);
-    if (slots_to_mark < 1) {
+    uint word_index = first_slot / WORD_SIZE, rem = first_slot % WORD_SIZE;
+    if (slots_to_mark < 1 || bitmap->slots_ptr == NULL ||
+        word_index > bitmap->total) {
         return;
     }
-    uint word_index = first_slot / WORD_SIZE, rem = first_slot % WORD_SIZE;
     if (rem) {
         bitmap->slots_ptr[word_index] |= WORD_MAX >> (WORD_SIZE - first_slot);
         word_index++;
         slots_to_mark -= rem;
     }
 
-    while (slots_to_mark >= WORD_SIZE) {
+    while (slots_to_mark >= WORD_SIZE && word_index < bitmap->total) {
         bitmap->slots_ptr[word_index] = WORD_MAX;
         slots_to_mark -= WORD_SIZE;
         ++word_index;
