@@ -3,7 +3,7 @@
 #include <types.h>
 
 struct bitmap {
-    int total;
+    size_t total;
     /**< Size of array at *slots_ptr */
 
     uint free_slots_count;
@@ -23,7 +23,7 @@ struct bitmap {
  * @size Size of slots buffer in words (i.e. if buffer length = 64 bytes, and
  * word size is 4 bytes, then size must be 16)
  */
-void bitmap_init(struct bitmap*, register_t slots[], size_t size);
+void bitmap_init(struct bitmap*, word_t slots[], size_t size);
 
 // Returns slot no.
 int bitmap_allocate_slot(struct bitmap*);
