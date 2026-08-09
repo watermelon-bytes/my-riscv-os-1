@@ -8,9 +8,13 @@
 // set QEMU virt's UART address to default
 // not marked as const to avoid hardcoding addresses;
 // use of UART is made to provide a convenient way of debugging
-static __auto_type const uart = (volatile char*)0x10000000;
+#ifndef QEMU_VIRT
+static __auto_type uart_base = (volatile u8*)0x10000000;
+#else
+static volatile u8* const uart_base = (volatile u8*)0x10000000;
+#endif
 
-void _putchar(char c) { *uart = c; }
+void _putchar(char c) { uart_base[UART_RECEIVER_BUFF] = c; }
 
 void uart_print(const char* str) {
     while (*str != 0) {
@@ -24,10 +28,11 @@ void uart_println(const char* str) {
 }
 
 int init_uart(const void* fdt) {
-    int uart_node = RETURN_IF_LESS_THAN_ZERO(
+    printf("[OK] here\n");
+    const int uart_node = RETURN_IF_LESS_THAN_ZERO(
         fdt_node_offset_by_compatible(fdt, -1, "ns16550a"));
     size_t size;
-    parse_reg(fdt, uart_node, (uintptr_t*)&uart, &size);
-    printf("parsed reg field of UART: starts at 0x%x, size = %i\n", uart, size);
+    parse_reg(fdt, uart_node, (uintptr_t*)&uart_base, &size);
+    printf("[OK] Found UART: starts at 0x%x, size = %i\n", uart_base, size);
     return 0;
 }
