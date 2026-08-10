@@ -24,7 +24,7 @@ void enable_interrupts() {
 
 __attribute__((aligned(4), noinline)) void handle() {
     const word_t cause = READ_CSR(mcause);
-    if (cause & ~MCAUSE_INTERRUPT_BIT) {
+    if (cause & MCAUSE_INTERRUPT_BIT) {
         printf("Caught interrupt! mcause = MCAUSE_INTERRUPT_BIT | %u\n",
                cause & ~MCAUSE_INTERRUPT_BIT);
     } else {

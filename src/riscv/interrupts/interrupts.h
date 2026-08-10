@@ -24,9 +24,8 @@ enum riscv_privileges {
 
 union mstatus_32 {
     uintptr_t raw_value_;
-    // I prefer to use more verbose naming. Maybe I shouldn't do so.
     __attribute__((packed)) struct {
-        u32 : 1;  // reserved
+        u32 : 1;  // leave reserved fields unnamed
         u32 supervisor_interrupt_enable : 1;
         u32 : 1;
         u32 machine_interrupt_enable : 1;
@@ -61,11 +60,11 @@ union mstatus_64 {
 union mtrap_vector {
     register_t raw_value;
     struct {
-        enum mtvec_mode_field {
+        enum mtvec_mode_field : reg_t {
             MTVEC_MODE_DIRECT,
             MTVEC_MODE_VECTORED
         } mode : 2;
-        register_t : 0;
+        reg_t : 0;
     };
     void* base;
 };
