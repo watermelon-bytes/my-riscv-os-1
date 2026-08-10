@@ -52,14 +52,12 @@ void bitmap_mark_as_used(struct bitmap* bitmap, uint first_slot,
     }
     if (rem) {
         bitmap->slots_ptr[word_index] |= WORD_MAX >> (WORD_SIZE - first_slot);
-        word_index++;
-        slots_to_mark -= rem;
+        word_index++, slots_to_mark -= rem;
     }
 
     while (slots_to_mark >= WORD_SIZE && word_index < bitmap->total) {
         bitmap->slots_ptr[word_index] = WORD_MAX;
-        slots_to_mark -= WORD_SIZE;
-        ++word_index;
+        slots_to_mark -= WORD_SIZE, ++word_index;
     }
 
     if (slots_to_mark > 0) {

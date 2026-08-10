@@ -66,10 +66,14 @@ static void* find_physical_addr_of_page(uint ppn) {
  * Marks the pages that the specified region [page_phys_addr, page_phys_addr +
  * total_bytes) covers.
  */
-static void ppn_borrow_pages(const void* page_phys_addr, size_t total_bytes) {
+static void pmm_borrow_pages(const void* page_phys_addr, size_t total_bytes) {
     const int ppn = physic_addr_to_ppn(page_phys_addr);
     const size_t pages_to_borrow =
         total_bytes / PAGE_SIZE + (total_bytes % PAGE_SIZE ? 1 : 0);
+    printf(
+        "[pmm_borrow_pages] Marking %i pages as used, starting at page no. "
+        "0x%x\n",
+        pages_to_borrow, ppn);
     bitmap_mark_as_used(&physical_bitmap_, ppn, pages_to_borrow);
 }
 
@@ -102,10 +106,10 @@ void init_phys_allocator() {
     // readability
     const __auto_type total_pages_available = total_mem >> PAGE_OFFSET_BITS;
 
-    // bitmap size = total pages count / bits per byte
-    const size_t bitmap_size = total_pages_available / CHAR_BIT +
-                               (total_pages_available % CHAR_BIT ? 1 : 0);
-    // LOG_VARIABLE(bitmap_size, "%i");
+    // bitmap size = total pages count / bits in word
+    const size_t bitmap_size = total_pages_available / WORD_SIZE +
+                               (total_pages_available % WORD_SIZE ? 1 : 0);
+    LOG_VARIABLE(bitmap_size, "%i");
     void* slots_for_bitmap = NULL;
 
     const uintptr_t kern_start = (uintptr_t)_kernel_physical_start,
@@ -113,7 +117,9 @@ void init_phys_allocator() {
     LOG_VARIABLE(kern_start, "0x%p");
     LOG_VARIABLE(kern_end, "0x%p");
 
+    const size_t bitmap_size_in_bytes = bitmap_size * sizeof(word_t);
     for (uint i = 0; i < total_memory_regions(); ++i) {
+        LOG_VARIABLE(bitmap_size_in_bytes, "%u");
         const struct ram_descriptor region = get_memory_region(i);
         const uintptr_t region_end = region.physicaddr + region.space_size;
         LOG_VARIABLE(region.physicaddr, "0x%x");
@@ -122,11 +128,11 @@ void init_phys_allocator() {
         if (kern_start >= region.physicaddr && kern_start < region_end) {
             next_boundary = kern_start;
         }
-        if (next_boundary - region.physicaddr >= bitmap_size) {
+        if (next_boundary - region.physicaddr >= bitmap_size_in_bytes) {
             slots_for_bitmap = (void*)region.physicaddr;
             break;
         }
-        if (region_end - kern_end >= bitmap_size) {
+        if (region_end - kern_end >= bitmap_size_in_bytes) {
             slots_for_bitmap = _kernel_physical_end;
             break;
         }
@@ -140,8 +146,8 @@ void init_phys_allocator() {
     printf("[OK] Placed bitmap at 0x%p - 0x%p\n", slots_for_bitmap,
            (u8*)slots_for_bitmap + bitmap_size);
     bitmap_init(&physical_bitmap_, slots_for_bitmap, bitmap_size);
-    ppn_borrow_pages(_kernel_physical_start, get_kernel_size());
-    ppn_borrow_pages(slots_for_bitmap, bitmap_size);
+    pmm_borrow_pages(_kernel_physical_start, get_kernel_size());
+    pmm_borrow_pages(slots_for_bitmap, bitmap_size);
     printf("[OK] Initialized bitmap\n");
 }
 

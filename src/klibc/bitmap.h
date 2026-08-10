@@ -20,8 +20,8 @@ struct bitmap {
 /*
  * Initializes the bitmap pointed to by @map with all zeroes
  * @slots Word-aligned buffer that belongs to the bitmap from now on.
- * @size Size of slots buffer in words (i.e. if buffer length = 64 bytes, and
- * word size is 4 bytes, then size must be 16)
+ * @size Size of slots buffer **in words** (i.e. if buffer length = 64 bytes,
+ * and word size is 4 bytes, then size must be 16)
  */
 void bitmap_init(struct bitmap*, word_t slots[], size_t size);
 
