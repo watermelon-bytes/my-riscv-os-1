@@ -110,10 +110,11 @@ void init_phys_allocator() {
     const size_t bitmap_size = total_pages_available / WORD_SIZE +
                                (total_pages_available % WORD_SIZE ? 1 : 0);
     LOG_VARIABLE(bitmap_size, "%i");
-    void* slots_for_bitmap = NULL;
 
-    const uintptr_t kern_start = (uintptr_t)_kernel_physical_start,
-                    kern_end = (uintptr_t)_kernel_physical_end;
+    word_t *slots_for_bitmap = NULL,
+           *kern_start = (word_t*)_kernel_physical_start,
+           *kern_end = (word_t*)_kernel_physical_end;
+
     LOG_VARIABLE(kern_start, "0x%p");
     LOG_VARIABLE(kern_end, "0x%p");
 
@@ -121,19 +122,20 @@ void init_phys_allocator() {
     for (uint i = 0; i < total_memory_regions(); ++i) {
         LOG_VARIABLE(bitmap_size_in_bytes, "%u");
         const struct ram_descriptor region = get_memory_region(i);
-        const uintptr_t region_end = region.physicaddr + region.space_size;
+        const word_t* region_end =
+            (word_t*)(region.physicaddr + region.space_size);
         LOG_VARIABLE(region.physicaddr, "0x%x");
 
         __auto_type next_boundary = region_end;
         if (kern_start >= region.physicaddr && kern_start < region_end) {
             next_boundary = kern_start;
         }
-        if (next_boundary - region.physicaddr >= bitmap_size_in_bytes) {
+        if ((reg_t)next_boundary - region.physicaddr >= bitmap_size_in_bytes) {
             slots_for_bitmap = (void*)region.physicaddr;
             break;
         }
-        if (region_end - kern_end >= bitmap_size_in_bytes) {
-            slots_for_bitmap = _kernel_physical_end;
+        if (region_end - (uintptr_t)kern_end >= bitmap_size_in_bytes) {
+            slots_for_bitmap = kern_end + 1;
             break;
         }
     }
