@@ -6,6 +6,7 @@
 _entry:
 	la gp, __global_pointer
     la sp, stack_top
+    csrw satp, zero
     call kmain
 1:
     wfi

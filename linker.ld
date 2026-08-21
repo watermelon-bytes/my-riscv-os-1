@@ -1,7 +1,7 @@
-ENTRY(_entry);
+/* ENTRY(_entry); */
  
 . = 0x80000000;
-PROVIDE(_kernel_physical_start = .);
+_kernel_physical_start = .;
 SECTIONS {
 	/* Include entry point at start of binary */
 	.text : ALIGN(4K) {
@@ -14,7 +14,6 @@ SECTIONS {
         *(.sbss) *(.sbss*);
 		. += 4K;
 		PROVIDE(stack_top = .);
-		. += 8K;
 		PROVIDE(__global_pointer = .);
 		PROVIDE(bss_end = .);
 	}
@@ -27,5 +26,5 @@ SECTIONS {
 		*(.data);
         . = ALIGN(4K);
 	}
-    PROVIDE(_kernel_physical_end = .);
+    _kernel_physical_end = .;
 }
