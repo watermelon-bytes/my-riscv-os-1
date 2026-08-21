@@ -55,7 +55,7 @@ void log_detected_memory() {
 #endif
 }
 
-i32 get_total_mem() {
+u32 get_total_mem() {
     uint counter = 0;
     for (uint i = 0; i < ram_regions_index; ++i) {
         counter += ram_regions[i].space_size;
@@ -65,7 +65,7 @@ i32 get_total_mem() {
 
 u32 total_memory_regions() { return ram_regions_index; }
 
-struct ram_descriptor get_memory_region(size_t index) {
+struct ram_descriptor pmm_get_region(size_t index) {
     ASSERT(index < ram_regions_index);
     return ram_regions[index];
 }

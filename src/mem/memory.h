@@ -16,11 +16,11 @@ int register_memory_regions(const uint32_t* first_cell, size_t len);
 
 int extract_ram_region_info(const void* device_tree, int node_offset);
 
-i32 get_total_mem();
+u32 get_total_mem();
 
 u32 total_memory_regions();
 
-struct ram_descriptor get_memory_region(size_t index);
+struct ram_descriptor pmm_get_region(size_t index);
 
 #ifndef NDEBUG
 void log_detected_memory();
