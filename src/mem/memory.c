@@ -34,7 +34,7 @@ int extract_ram_region_info(const void* device_tree, int node_offset) {
     if (ram_regions_index >= MAX_MEM_REGIONS) {
         return -1;
     }
-    __auto_type buf = &ram_regions[ram_regions_index++];
+    struct ram_descriptor* buf = &ram_regions[ram_regions_index++];
     const __auto_type res =
         parse_reg(device_tree, node_offset, &buf->physicaddr, &buf->space_size);
     ASSERT(buf->space_size != 0);
@@ -47,9 +47,10 @@ void log_detected_memory() {
     printf(breaker);
     printf("detected RAM:\n");
     for (uint32_t i = 0; i < ram_regions_index; ++i) {
-        const __auto_type r = &ram_regions[i];
+        const __auto_type region = &ram_regions[i];
         printf("RAM region %i: address range [0x%x, 0x%x], size = %i B\n", i,
-               r->physicaddr, r->physicaddr + r->space_size, r->space_size);
+               region->physicaddr, region->physicaddr + region->space_size,
+               region->space_size);
     }
     printf(breaker);
 #endif

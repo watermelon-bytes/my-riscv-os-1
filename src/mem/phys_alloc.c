@@ -26,13 +26,13 @@ static int physic_addr_to_ppn(const void* page) {
     const uintptr_t page_ptr = (uintptr_t)page & (~OFFSET_MASK);
     uint counter = 0;
     for (uint i = 0; i < total_memory_regions(); ++i) {
-        const size_t size = get_memory_region(i).space_size;
-        const uintptr_t phys_addr = get_memory_region(i).physicaddr;
+        const size_t size = pmm_get_region(i).space_size;
+        const uintptr_t phys_addr = pmm_get_region(i).physicaddr;
         if (page_ptr >= phys_addr && page_ptr <= phys_addr + size) {
             const size_t diff = page_ptr - phys_addr;
             return counter + (diff >> PAGE_OFFSET_BITS);
         }
-        counter += get_memory_region(i).space_size / PAGE_SIZE;
+        counter += pmm_get_region(i).space_size / PAGE_SIZE;
     }
     return -1;
 }
@@ -53,9 +53,9 @@ static int physic_addr_to_ppn(const void* page) {
 static void* find_physical_addr_of_page(uint ppn) {
     for (uint i = 0; i < total_memory_regions(); ++i) {
         const size_t pages_in_this_reg =
-            get_memory_region(i).space_size >> PAGE_OFFSET_BITS;
+            pmm_get_region(i).space_size >> PAGE_OFFSET_BITS;
         if (ppn > pages_in_this_reg) {
-            return (void*)(get_memory_region(i).physicaddr +
+            return (void*)(pmm_get_region(i).physicaddr +
                            (ppn << PAGE_OFFSET_BITS));
         }
     }
@@ -94,22 +94,24 @@ void init_phys_allocator() {
      * 4. Clear all page bits to zeroes; enable bits conforming to kernel
      * image pages.
      */
-    const i32 total_mem = get_total_mem();
 
     // We assume that memory amount is 4Kib-aligned
+    ASSERT(_kernel_physical_start < _kernel_physical_end);
     ASSERT(get_kernel_size() % PAGE_SIZE == 0);
-    const long unborrowed = total_mem - get_kernel_size();
-    if (unborrowed < (signed)PAGE_SIZE * 6) {
+    const long unborrowed = get_total_mem() - get_kernel_size();
+    if (unborrowed < (long)PAGE_SIZE) {
         KERNEL_PANIC("not enough RAM available (%u bytes only)", unborrowed);
     }
     // NOTE: Consider using division instead of bitwise shift for better
     // readability
-    const __auto_type total_pages_available = total_mem >> PAGE_OFFSET_BITS;
+    const __auto_type total_pages_available =
+        get_total_mem() >> PAGE_OFFSET_BITS;
+    LOG_VARIABLE(total_pages_available, "%u");
 
     // bitmap size = total pages count / bits in word
     const size_t bitmap_size = total_pages_available / WORD_SIZE +
                                (total_pages_available % WORD_SIZE ? 1 : 0);
-    LOG_VARIABLE(bitmap_size, "%i");
+    LOG_VARIABLE(bitmap_size, "%u");
 
     word_t *slots_for_bitmap = NULL,
            *kern_start = (word_t*)_kernel_physical_start,
@@ -119,34 +121,40 @@ void init_phys_allocator() {
     LOG_VARIABLE(kern_end, "0x%p");
 
     const size_t bitmap_size_in_bytes = bitmap_size * sizeof(word_t);
+    LOG_VARIABLE(bitmap_size_in_bytes, "%u");
+
     for (uint i = 0; i < total_memory_regions(); ++i) {
-        LOG_VARIABLE(bitmap_size_in_bytes, "%u");
-        const struct ram_descriptor region = get_memory_region(i);
-        const word_t* region_end =
+        const struct ram_descriptor region = pmm_get_region(i);
+        const word_t* const region_end =
             (word_t*)(region.physicaddr + region.space_size);
         LOG_VARIABLE(region.physicaddr, "0x%x");
 
         __auto_type next_boundary = region_end;
-        if (kern_start >= region.physicaddr && kern_start < region_end) {
+        if (_kernel_physical_start >= (u8*)region.physicaddr &&
+            kern_start < region_end) {
             next_boundary = kern_start;
         }
+        LOG_VARIABLE(next_boundary, "0x%p");
         if ((reg_t)next_boundary - region.physicaddr >= bitmap_size_in_bytes) {
             slots_for_bitmap = (void*)region.physicaddr;
             break;
         }
-        if (region_end - (uintptr_t)kern_end >= bitmap_size_in_bytes) {
-            slots_for_bitmap = kern_end + 1;
+
+        if (kern_end < region_end &&
+            (reg_t)region_end - (reg_t)kern_end >= bitmap_size_in_bytes) {
+            // If there's space between the end of the kernel image AND the end
+            // of the
+            slots_for_bitmap = kern_end;
             break;
         }
     }
+    LOG_VARIABLE(slots_for_bitmap, "0x%x");
     // Panic if could not allocate enough continuous space
     if (slots_for_bitmap == NULL) {
         KERNEL_PANIC(
             "can't find continuous space for bitmap; non-continuous page "
             "bitmaps not supported yet");
     }
-    printf("[OK] Placed bitmap at 0x%p - 0x%p\n", slots_for_bitmap,
-           (u8*)slots_for_bitmap + bitmap_size);
     bitmap_init(&physical_bitmap_, slots_for_bitmap, bitmap_size);
     pmm_borrow_pages(_kernel_physical_start, get_kernel_size());
     pmm_borrow_pages(slots_for_bitmap, bitmap_size);
