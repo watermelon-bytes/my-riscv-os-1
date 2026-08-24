@@ -19,18 +19,24 @@ void enable_interrupts() {
     union mstatus_32 mstatus;
     mstatus.raw_value_ = READ_CSR(mstatus);
     mstatus.machine_interrupt_enable = 1;
+    WRITE_CSR(mip, 0);
     WRITE_CSR(mstatus, mstatus.raw_value_);
 }
 
 __attribute__((aligned(4), noinline)) void handle() {
-    const word_t cause = READ_CSR(mcause);
-    if (cause & MCAUSE_INTERRUPT_BIT) {
-        printf("Caught interrupt! mcause = MCAUSE_INTERRUPT_BIT | %u\n",
-               cause & ~MCAUSE_INTERRUPT_BIT);
-    } else {
-        printf("Caught exception! mcause = %u\n", cause);
-    }
-    printf("mepc = 0x%x\n", READ_CSR(mepc));
+    const word_t cause = READ_CSR(mcause), epc = READ_CSR(mepc),
+                 tval = READ_CSR(mtval), status = READ_CSR(mstatus),
+                 satp = READ_CSR(satp);
+
+    printf("\n========== TRAP ==========\n");
+    printf("mcause = 0x%x\n", cause);
+    printf("mepc   = 0x%x\n", epc);
+    printf("mtval  = 0x%x\n", tval);
+    printf("mstatus= 0x%x\n", status);
+    printf("satp   = 0x%x\n", satp);
+    printf("mtvec  = 0x%x\n", READ_CSR(mtvec));
+    printf("==========================\n");
+
     halt();
 }
 
@@ -45,19 +51,28 @@ void setup_interrupt_handler() {
     mtvec.base = &handle;
     // Specify handler address
     WRITE_CSR(mtvec, mtvec.raw_value);
+    WRITE_CSR(stvec, mtvec.raw_value);
+    ASSERT(READ_CSR(mtvec) == (uintptr_t)&handle);
 
     // Allow all interrupts
     WRITE_CSR(mie, RISCV_ALL_INTR_SOURCES_ON);
     WRITE_CSR(mip, RISCV_ALL_INTR_SOURCES_ON);
-    printf("[OK] Enabled all interrupts\n");
+    // printf("[OK] Enabled all interrupts\n");
 }
 
 struct riscv_timer present_timer;
 
 void init_interrupt_controller(const void* device_tree) {
-    if (discover_clint(device_tree) != 0) {
-        // TODO:
-        present_timer = clint_init_timer();
-        printf("[OK] Discovered CLINT\n");
+    switch (discover_clint(device_tree)) {
+        case 0:
+            present_timer = clint_init_timer();
+            printf("[OK] Discovered CLINT\n");
+            printf("[INFO] mtimecmp at %p, mtime at %p\n",
+                   present_timer.mtimecmp, present_timer.mtime);
+            return;
+        case -2:
+            KERNEL_PANIC("CLINT node is present but not valid");
+        case -1:
+            KERNEL_PANIC("No CLINT node in Device Tree found");
     }
 }
