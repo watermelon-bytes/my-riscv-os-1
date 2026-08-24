@@ -54,7 +54,7 @@ static void* find_physical_addr_of_page(uint ppn) {
     for (uint i = 0; i < total_memory_regions(); ++i) {
         const size_t pages_in_this_reg =
             pmm_get_region(i).space_size >> PAGE_OFFSET_BITS;
-        if (ppn > pages_in_this_reg) {
+        if (ppn < pages_in_this_reg) {
             return (void*)(pmm_get_region(i).physicaddr +
                            (ppn << PAGE_OFFSET_BITS));
         }
@@ -68,13 +68,14 @@ static void* find_physical_addr_of_page(uint ppn) {
  */
 static void pmm_borrow_pages(const void* page_phys_addr, size_t total_bytes) {
     const int ppn = physic_addr_to_ppn(page_phys_addr);
+    ASSERT(ppn != -1);
     const size_t pages_to_borrow =
         total_bytes / PAGE_SIZE + (total_bytes % PAGE_SIZE ? 1 : 0);
     printf(
         "[pmm_borrow_pages] Marking %i pages as used, starting at page no. "
         "0x%x\n",
         pages_to_borrow, ppn);
-    bitmap_mark_as_used(&physical_bitmap_, ppn, pages_to_borrow);
+    bitmap_mark_as_used(&physical_bitmap_, (unsigned)ppn, pages_to_borrow);
 }
 
 void init_phys_allocator() {
@@ -166,5 +167,5 @@ void* allocate_page() {
     if (slot == -1) {
         return NULL;
     }
-    return find_physical_addr_of_page(slot);
+    return find_physical_addr_of_page((unsigned)slot);
 }
