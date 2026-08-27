@@ -22,8 +22,9 @@ int bitmap_allocate_slot(struct bitmap* map) {
         if (map->slots_ptr[i] == WORD_MAX) {
             continue;
         } else {
-            const uint offset = count_trailing_zeroes(map->slots_ptr[i]);
-            map->slots_ptr[i] |= 1 << offset;
+            reg_t* slot = &map->slots_ptr[i];
+            const uint offset = count_trailing_zeroes(~*slot);
+            *slot |= 1 << offset;
             map->free_slots_count--;
             return WORD_SIZE * i + offset;
         }

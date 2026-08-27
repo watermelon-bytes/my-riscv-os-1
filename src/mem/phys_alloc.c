@@ -52,8 +52,8 @@ static int physic_addr_to_ppn(const void* page) {
  */
 static void* find_physical_addr_of_page(uint ppn) {
     for (uint i = 0; i < total_memory_regions(); ++i) {
-        const size_t pages_in_this_reg =
-            pmm_get_region(i).space_size >> PAGE_OFFSET_BITS;
+        const struct ram_descriptor this = pmm_get_region(i);
+        const size_t pages_in_this_reg = this.space_size >> PAGE_OFFSET_BITS;
         if (ppn < pages_in_this_reg) {
             return (void*)(pmm_get_region(i).physicaddr +
                            (ppn << PAGE_OFFSET_BITS));
@@ -128,14 +128,12 @@ void init_phys_allocator() {
         const struct ram_descriptor region = pmm_get_region(i);
         const word_t* const region_end =
             (word_t*)(region.physicaddr + region.space_size);
-        LOG_VARIABLE(region.physicaddr, "0x%x");
 
         __auto_type next_boundary = region_end;
         if (_kernel_physical_start >= (u8*)region.physicaddr &&
             kern_start < region_end) {
             next_boundary = kern_start;
         }
-        LOG_VARIABLE(next_boundary, "0x%p");
         if ((reg_t)next_boundary - region.physicaddr >= bitmap_size_in_bytes) {
             slots_for_bitmap = (void*)region.physicaddr;
             break;
@@ -149,7 +147,6 @@ void init_phys_allocator() {
             break;
         }
     }
-    LOG_VARIABLE(slots_for_bitmap, "0x%x");
     // Panic if could not allocate enough continuous space
     if (slots_for_bitmap == NULL) {
         KERNEL_PANIC(
