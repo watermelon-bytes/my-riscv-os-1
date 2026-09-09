@@ -3,18 +3,19 @@
 #include <types.h>
 
 struct bitmap {
-    size_t total;
-    /**< Size of array at *slots_ptr */
+    /* Contains size of array at *slots_ptr, i.e. how many 32-bit or 64-bit
+     * chunks we have */
+    size_t slots_size;
 
+    /* Total zeroed bits */
     uint free_slots_count;
-    /**< Total zeroed bits */
 
+    /* Index of word in slots_ptr that (potentially) has clear bits */
     uint last_freed;
-    /**< Index of word in slots_ptr that (potentially) has clear bits */
 
-    register_t* slots_ptr;
-    /**< Pointer to runtime-allocated array. Could have used C23 FMA but this is
+    /* Pointer to runtime-allocated array. Could have used C23 FMA but this is
      * more backwards-compatible option */
+    register_t* slots_ptr;
 };
 
 /*
@@ -25,9 +26,17 @@ struct bitmap {
  */
 void bitmap_init(struct bitmap*, word_t slots[], size_t size);
 
-// Returns slot no.
+/*
+ * Finds a free slot in the bitmap, marks it as borrowed, and returns the slot
+ * index
+ */
 int bitmap_allocate_slot(struct bitmap*);
 
 void bitmap_free_slot(struct bitmap*, uint slot);
 
-void bitmap_mark_as_used(struct bitmap*, uint first_slot, i32 slots_to_mark);
+/*
+ * Marks `slots_to_mark` slots, starting from `first_slot`, as used.
+ */
+void bitmap_mark_as_used(struct bitmap*, uint first_slot, u32 slots_to_mark);
+
+_Bool bitmap_is_slot_borrowed(struct bitmap* bm, const size_t slot_no);
