@@ -117,11 +117,7 @@ char* strrchr(const char* str, int ch) {
     return NULL;
 }
 
-// WARNING: Only use if count is known to be divisible by machine word size (in
-// our case, 4)
 void word_aligned_memset(register_t* p, const register_t num, size_t count) {
-    // probably should leave those asserts because they're debug-only and may
-    // help catch something weird
     for (register_t* ptr = p; count > 0; count--) {
         *ptr++ = num;
     }
