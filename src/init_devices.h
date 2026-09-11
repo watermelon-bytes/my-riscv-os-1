@@ -49,34 +49,9 @@ int configure_field_size(void* fdt, int root);
 enum parsing_error parse_reg(const void* tree, const int node,
                              uintptr_t* begin_buf, size_t* size_buf);
 
-/**
- * Safely parses a Device Tree Address cell array into a native
- * pointer.
- *
- * This function handles cases where the Device Tree has cell sizes larger
- * than the platform's native pointer width (e.g., 64-bit DTB properties
- * on a 32-bit system). If the value fits within the native pointer width, it is
- * extracted; otherwise, it fails.
- *
- * @note Assumes a minimum native pointer size of 32 bits.
- * @note Assumes the input cell data is encoded in Big-Endian (Device Tree
- * standard).
- *
- * @param[out] result  Pointer to a variable where the parsed native address
- * will be stored. Only written to if the function returns true.
- * @param[in]  cells   Pointer to the raw DT cell array representing the
- * address or size.
- *
- * Returns NULL on error, and pointer to next cell after the address on success.
- */
-const u32* fetch_native_pointer(uintptr_t* const result, const uint32_t* cells);
-const u32* fetch_size_field(register_t* result, const u32* cells);
-
 int get_sizeof_one_descriptor();
 
 int detect_memory(const void* fdt);
-int detect_power_config(const void* fdt);
-int parse_systems_on_chip(const void* fdt);
 
 enum parsing_error {
     SUCCESS,
