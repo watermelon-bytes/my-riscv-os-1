@@ -45,9 +45,6 @@ int configure_field_size(void* fdt, int root);
  * @node Offset of the node containing the necessary <reg> field
  * @begin_buf Pointer to buffer where start address will be stored
  * @size_buf Pointer to buffer where size will be stored
- *
- * Requires configure_field_size to be called beforehand as it relies on values
- * stored in variables by configure_field_size.
  */
 enum parsing_error parse_reg(const void* tree, const int node,
                              uintptr_t* begin_buf, size_t* size_buf);
