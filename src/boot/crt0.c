@@ -73,13 +73,55 @@ int strncmp(const char* s1, const char* s2, const size_t sz) {
     return 0;
 }
 
-// TODO: Optimise naive implementation
 SET_OPTIMIZATION_LVL(2)
 size_t strlen(const char* s) {
-    // return __builtin_strlen(s);
-    size_t i = 0;
-    while (s[i] != 0) ++i;
-    return i;
+    reg_t* ptr;
+    size_t length = 0;
+
+    if ((uintptr_t)s % sizeof(uintptr_t)) {
+        const uintptr_t next_aligned_addr =
+            ((uintptr_t)s & (~(sizeof(uintptr_t) - 1))) + sizeof(reg_t);
+        // up to next aligned address
+        for (const char* p = s; (uintptr_t)p < next_aligned_addr; p++) {
+            if (*p == 0) {
+                return p - s;
+            }
+        }
+        length = next_aligned_addr - (uintptr_t)s;
+        ptr = (reg_t*)next_aligned_addr;
+    } else {
+        ptr = (reg_t*)s;
+    }
+    while (true) {
+        const reg_t chunk = *ptr++;
+        for (size_t i = 0; i < sizeof(reg_t); ++i) {
+            const reg_t mask = 0xFFull << (i * CHAR_BIT);
+            if ((chunk & mask) == 0) {
+                return length + i;
+            }
+        }
+        length += sizeof(reg_t);
+
+        // if ((chunk & (0xFFull)) == 0) {
+        //     return length;
+        // } else if ((chunk & (0xFFull << 8)) == 0) {
+        //     return length + 1;
+        // } else if ((chunk & (0xFFull << 16)) == 0) {
+        //     return length + 2;
+        // } else if ((chunk & (0xFFull << 24)) == 0) {
+        //     return length + 3;
+        // } else if ((chunk & (0xFFull << 32)) == 0) {
+        //     return length + 4;
+        // } else if ((chunk & (0xFFull << 40)) == 0) {
+        //     return length + 5;
+        // } else if ((chunk & (0xFFull << 48)) == 0) {
+        //     return length + 6;
+        // } else if ((chunk & (0xFFull << 56)) == 0) {
+        //     return length + 7;
+        // } else {
+        //     length += 8;
+        // }
+    }
 }
 
 SET_OPTIMIZATION_LVL(2)
