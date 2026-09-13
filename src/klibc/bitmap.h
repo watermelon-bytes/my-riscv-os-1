@@ -39,4 +39,4 @@ void bitmap_free_slot(struct bitmap*, uint slot);
  */
 void bitmap_mark_as_used(struct bitmap*, uint first_slot, u32 slots_to_mark);
 
-_Bool bitmap_is_slot_borrowed(struct bitmap* bm, const size_t slot_no);
+_Bool bitmap_is_used(struct bitmap* bm, const size_t slot_no);

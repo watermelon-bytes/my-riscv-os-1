@@ -4,7 +4,7 @@
 #include <klibc/panic.h>
 #include <klibc/utils.h>
 
-bool bitmap_is_slot_borrowed(struct bitmap* bm, const size_t slot_no) {
+bool bitmap_is_used(struct bitmap* bm, const size_t slot_no) {
     return bm->slots_ptr[slot_no / WORD_SIZE] & (1 << (slot_no % WORD_SIZE));
 }
 
@@ -35,7 +35,7 @@ void bitmap_init(struct bitmap* map, register_t slots[], size_t size) {
 }
 
 int bitmap_allocate_slot(struct bitmap* map) {
-    ASSERT(map != NULL);
+    if (map == NULL) return -1;
     for (size_t i = 0; i < map->slots_size; ++i) {
         if (map->slots_ptr[i] == WORD_MAX) {
             continue;
