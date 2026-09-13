@@ -7,4 +7,5 @@ void halt() {
 loop:
     __asm__ __volatile__("wfi; \n");
     goto loop;
+    __builtin_unreachable();
 }

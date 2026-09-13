@@ -1,6 +1,7 @@
 #include "memory.h"
 
 #include <init_devices.h>
+#include <k_assert.h>
 #include <klibc/panic.h>
 #include <klibc/printf.h>
 #include <libfdt.h>
@@ -37,7 +38,7 @@ int extract_ram_region_info(const void* device_tree, int node_offset) {
     struct ram_descriptor* buf = &ram_regions[ram_regions_index++];
     const __auto_type res =
         parse_reg(device_tree, node_offset, &buf->physicaddr, &buf->space_size);
-    ASSERT(buf->space_size != 0);
+    DEBUG_ASSERT(buf->space_size != 0);
     return res;
 }
 
@@ -67,6 +68,7 @@ u32 get_total_mem() {
 u32 total_memory_regions() { return ram_regions_index; }
 
 struct ram_descriptor pmm_get_region(size_t index) {
-    ASSERT(index < ram_regions_index);
+    // TODO: handle error properly (e.g. kernel panic or something)
+    DEBUG_ASSERT(index < ram_regions_index);
     return ram_regions[index];
 }

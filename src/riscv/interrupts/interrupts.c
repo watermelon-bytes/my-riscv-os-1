@@ -1,7 +1,7 @@
 #include <init_devices.h>
+#include <klibc/k_assert.h>
 #include <klibc/panic.h>
 #include <klibc/utils.h>
-#include <libfdt.h>
 #include <riscv/clint/clint.h>
 #include <riscv/csr_operations.h>
 #include <riscv/interrupts/exception_codes.h>
@@ -44,15 +44,14 @@ void setup_interrupt_handler() {
     asm volatile(
         "csrw mideleg, zero;"
         "csrw medeleg, zero;");
-    ASSERT_WITH_MSG((uintptr_t)&handle % 4 == 0,
-                    "Handler address is not aligned!");
-    union mtrap_vector mtvec;
-    mtvec.mode = MTVEC_MODE_DIRECT;
-    mtvec.base = &handle;
+    // can't static_assert this, unfortunately
+    DEBUG_ASSERT((uintptr_t)&handle % 4 == 0);
+
+    union mtrap_vector mtvec = {.base = &handle};
     // Specify handler address
     WRITE_CSR(mtvec, mtvec.raw_value);
     WRITE_CSR(stvec, mtvec.raw_value);
-    ASSERT(READ_CSR(mtvec) == (uintptr_t)&handle);
+    DEBUG_ASSERT(READ_CSR(mtvec) == (uintptr_t)&handle);
 
     // Allow all interrupts
     WRITE_CSR(mie, RISCV_ALL_INTR_SOURCES_ON);

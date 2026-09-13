@@ -1,8 +1,10 @@
 // Common interface for bitmaps
 #include <bitwise_utils.h>
 #include <klibc/bitmap.h>
-#include <klibc/panic.h>
+#include <klibc/k_assert.h>
+#include <klibc/printf.h>
 #include <klibc/utils.h>
+#include <stdbool.h>
 
 bool bitmap_is_used(struct bitmap* bm, const size_t slot_no) {
     return bm->slots_ptr[slot_no / WORD_SIZE] & (1 << (slot_no % WORD_SIZE));
@@ -23,7 +25,7 @@ bool _enable_bit(struct bitmap* bm, const size_t index) {
 }
 
 void bitmap_init(struct bitmap* map, register_t slots[], size_t size) {
-    ASSERT(slots != NULL);
+    DEBUG_ASSERT(slots != NULL);
     if (slots == NULL || size == 0) {
         return;
     }
@@ -51,7 +53,7 @@ int bitmap_allocate_slot(struct bitmap* map) {
 }
 
 void bitmap_free_slot(struct bitmap* map, uint slot) {
-    ASSERT(map->slots_size > slot);
+    DEBUG_ASSERT(map->slots_size > slot);
     const uint word = slot / WORD_SIZE, offset = slot % WORD_SIZE;
     const word_t snapshot = map->slots_ptr[word];
     map->slots_ptr[word] &= ~(1 << offset);

@@ -1,5 +1,7 @@
 #include <klibc/bitmap.h>
+#include <klibc/k_assert.h>
 #include <klibc/panic.h>
+#include <stdbool.h>
 
 #define SLOTS_SIZE 10
 reg_t slots[SLOTS_SIZE];
@@ -30,16 +32,16 @@ bool test_mark_as_used() {
     bitmap_mark_as_used(&my_bitmap, 55, 5);
     size_t i = 0;
     for (; i < 50; ++i) {
-        ASSERT(bitmap_is_slot_borrowed(&my_bitmap, i) == 1);
+        DEBUG_ASSERT(bitmap_is_used(&my_bitmap, i) == 1);
     }
     for (; i < 55; ++i) {
-        ASSERT(bitmap_is_slot_borrowed(&my_bitmap, i) == 0);
+        DEBUG_ASSERT(bitmap_is_used(&my_bitmap, i) == 0);
     }
     for (; i < 60; ++i) {
-        ASSERT(bitmap_is_slot_borrowed(&my_bitmap, i) == 1);
+        DEBUG_ASSERT(bitmap_is_used(&my_bitmap, i) == 1);
     }
     for (; i < WORD_SIZE * SLOTS_SIZE; ++i) {
-        ASSERT(bitmap_is_slot_borrowed(&my_bitmap, i) == 0);
+        DEBUG_ASSERT(bitmap_is_used(&my_bitmap, i) == 0);
     }
     debug_print_bitmap(&my_bitmap);
     return true;
@@ -54,7 +56,7 @@ bool test_mark_as_used2() {
 
 void run_all_tests() {
     bitmap_init(&my_bitmap, slots, SLOTS_SIZE);
-    ASSERT(my_bitmap.slots_size = SLOTS_SIZE);
-    ASSERT(test_mark_as_used());
+    DEBUG_ASSERT(my_bitmap.slots_size = SLOTS_SIZE);
+    DEBUG_ASSERT(test_mark_as_used());
     printf("[OK] All tests passed!");
 }

@@ -1,5 +1,6 @@
 #include <klibc/bitmap.h>
 #include <klibc/bitwise_utils.h>
+#include <klibc/k_assert.h>
 #include <klibc/panic.h>
 #include <klibc/utils.h>
 #include <limits.h>
@@ -68,7 +69,7 @@ static void* find_physical_addr_of_page(uint ppn) {
  */
 static void pmm_borrow_pages(const void* page_phys_addr, size_t total_bytes) {
     const int ppn = physic_addr_to_ppn(page_phys_addr);
-    ASSERT(ppn != -1);
+    DEBUG_ASSERT(ppn != -1);
     const size_t pages_to_borrow =
         total_bytes / PAGE_SIZE + (total_bytes % PAGE_SIZE ? 1 : 0);
     printf(
@@ -80,7 +81,7 @@ static void pmm_borrow_pages(const void* page_phys_addr, size_t total_bytes) {
 
 void init_phys_allocator() {
     /* ensure we're called AFTER detect_memory() */
-    ASSERT(total_memory_regions() > 0);
+    DEBUG_ASSERT(total_memory_regions() > 0);
     /* TODO: Consider calling this function from detect_memory() or make a
      * function init_memory() that will call detect_memory() first and
      * init_phys_allocator() later, so that the initialization order can be
@@ -97,8 +98,8 @@ void init_phys_allocator() {
      */
 
     // We assume that memory amount is 4Kib-aligned
-    ASSERT(_kernel_physical_start < _kernel_physical_end);
-    ASSERT(get_kernel_size() % PAGE_SIZE == 0);
+    DEBUG_ASSERT(_kernel_physical_start < _kernel_physical_end);
+    DEBUG_ASSERT(get_kernel_size() % PAGE_SIZE == 0);
     const long unborrowed = get_total_mem() - get_kernel_size();
     if (unborrowed < (long)PAGE_SIZE) {
         KERNEL_PANIC("not enough RAM available (%u bytes only)", unborrowed);
