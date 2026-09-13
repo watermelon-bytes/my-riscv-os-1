@@ -1,6 +1,6 @@
 #pragma once
+#include <klibc/types.h>
 #include <stdbool.h>
-#include <types.h>
 
 // clang-format off
 enum riscv_extensions : u32 {

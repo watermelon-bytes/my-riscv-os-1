@@ -1,6 +1,6 @@
 #pragma once
+#include <klibc/types.h>
 #include <stdbool.h>
-#include <types.h>
 /*
  * Detects an external interrupt controller and initializes it.
  *

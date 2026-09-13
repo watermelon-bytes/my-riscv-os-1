@@ -1,6 +1,6 @@
 #pragma once
+#include <klibc/types.h>
 #include <limits.h>
-#include <types.h>
 
 #if __STDC_VERSION__ >= 202311l
 constexpr uint PAGE_OFFSET_BITS = 12;
@@ -48,7 +48,7 @@ extern u8 _kernel_physical_end[];
 
 // Places and initializes a page bitmap in first available page
 // Assumes that the only borrowed memory is where kernel image is placed - i.e.
-// range [_kernel_physical_start -> _kernel_physical_end]
+// range [_kernel_physical_start -> _kernel_physical_end)
 // Relies on RAM info provided by Device Tree and parsed by functions in
 // memory.c
 // Must be called only after `detect_memory`.

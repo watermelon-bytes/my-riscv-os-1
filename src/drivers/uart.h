@@ -1,5 +1,5 @@
 #pragma once
-#include <types.h>
+#include <klibc/types.h>
 // Collects info on UART from device tree; initializes and configures device
 // driver to match current platform's specs
 // Returns:

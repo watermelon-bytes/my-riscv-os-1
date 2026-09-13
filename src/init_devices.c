@@ -2,9 +2,9 @@
 #include <init_devices.h>
 #include <klibc/panic.h>
 #include <klibc/printf.h>
+#include <klibc/utils.h>
 #include <libfdt.h>
 #include <mem/memory.h>
-#include <utils.h>
 
 _Bool check_device_tree(const void* devtree) {
     if (devtree == NULL) return false;

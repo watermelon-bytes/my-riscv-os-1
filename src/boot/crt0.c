@@ -1,8 +1,9 @@
 #include <klibc/panic.h>
+#include <klibc/types.h>
+#include <klibc/utils.h>
 #include <limits.h>
+#include <stdbool.h>
 #include <stdint.h>
-#include <types.h>
-#include <utils.h>
 
 _Static_assert(
     sizeof(void*) == sizeof(uintptr_t),

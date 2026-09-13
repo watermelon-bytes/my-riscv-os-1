@@ -1,8 +1,8 @@
 #include <klibc/panic.h>
-#include <printf.h>
+#include <klibc/printf.h>
+#include <klibc/utils.h>
 #include <riscv/csr_operations.h>
 #include <riscv/extension_check.h>
-#include <utils.h>
 
 bool is_extension_implemented(enum riscv_extensions ext) {
     return READ_CSR(misa) & ext;

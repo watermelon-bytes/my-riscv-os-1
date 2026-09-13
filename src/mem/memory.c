@@ -1,12 +1,12 @@
 #include "memory.h"
 
 #include <init_devices.h>
-#include <k_assert.h>
+#include <klibc/k_assert.h>
 #include <klibc/panic.h>
 #include <klibc/printf.h>
+#include <klibc/types.h>
+#include <klibc/utils.h>
 #include <libfdt.h>
-#include <types.h>
-#include <utils.h>
 
 int detect_memory(const void* tree) {
     const char memory_str[] = "memory";

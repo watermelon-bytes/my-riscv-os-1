@@ -1,6 +1,6 @@
 // Common interface for bitmaps
 #pragma once
-#include <types.h>
+#include <klibc/types.h>
 
 struct bitmap {
     /* Contains size of array at *slots_ptr, i.e. how many 32-bit or 64-bit

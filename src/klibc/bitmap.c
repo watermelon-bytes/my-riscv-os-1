@@ -1,6 +1,6 @@
 // Common interface for bitmaps
-#include <bitwise_utils.h>
 #include <klibc/bitmap.h>
+#include <klibc/bitwise_utils.h>
 #include <klibc/k_assert.h>
 #include <klibc/printf.h>
 #include <klibc/utils.h>

@@ -1,8 +1,8 @@
 #pragma once
+#include <klibc/types.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <types.h>
 _Bool check_device_tree(void const*);
 
 int init_devices(void* fdt);

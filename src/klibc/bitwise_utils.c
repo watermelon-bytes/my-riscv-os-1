@@ -1,24 +1,22 @@
-#include <bitwise_utils.h>
+#include <klibc/bitwise_utils.h>
+#include <klibc/types.h>
+#include <klibc/utils.h>
 #include <limits.h>
 #include <riscv/extension_check.h>
-#include <types.h>
-#include <utils.h>
 
 #if defined(__riscv_zbb)
-inline uint count_trailing_zeroes(unsigned long x) {
+uint count_trailing_zeroes(unsigned long x) {
     uint res;
     asm("ctz a0, a0;" : "=r"(res) : "r"(x));
     return res;
 }
 #else
 // TODO: Optimize with binary search or something
-uint count_trailing_zeroes(unsigned long x) {
-    for (int i = 0; i < sizeof(x) * CHAR_BIT; ++i) {
-        const uint shift = BITS_COUNT(__typeof__(x)) - 1;
-        if (x & (1 << shift)) {
+unsigned count_trailing_zeroes(unsigned long x) {
+    for (size_t i = 0; i < BITS_COUNT(__typeof__(x)); ++i) {
+        if (1 & (x >> i)) {
             return i;
         }
-        x <<= 1;
     }
     return 32;
 }

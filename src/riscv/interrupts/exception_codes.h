@@ -1,5 +1,5 @@
 #pragma once
-#include <types.h>
+#include <klibc/types.h>
 
 #define MCAUSE_INTERRUPT_BIT ((uint32_t)(1 << 31))
 enum : u32 {

@@ -1,5 +1,5 @@
 #pragma once
-#include <types.h>
+#include <klibc/types.h>
 
 enum riscv_interrupt_sources : reg_t {
     // Machine-level interrupts:

@@ -1,10 +1,9 @@
 #pragma once
-#include <types.h>
+#include <klibc/types.h>
 
-struct riscv_timer {
+extern struct riscv_timer {
     reg_t* mtime;
     reg_t* mtimecmp;
-};
+} present_timer;
 
-extern struct riscv_timer present_timer;
 void timer_sleep(uint cycles);

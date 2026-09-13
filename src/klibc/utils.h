@@ -1,5 +1,5 @@
 #pragma once
-#include <types.h>
+#include <klibc/types.h>
 
 u32 byte_swap_32(const u32 original);
 void word_aligned_memset(register_t* p, const register_t num, size_t count);
