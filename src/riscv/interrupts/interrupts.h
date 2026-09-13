@@ -2,7 +2,10 @@
 #include <stdbool.h>
 #include <types.h>
 /*
- * Detects an external interrupt controller
+ * Detects an external interrupt controller and initializes it.
+ *
+ * Panics if can't find a well-known interrupt controller in the Device Tree,
+ * such as Core-Local Interrupt Controller (CLINT).
  */
 void init_interrupt_controller(const void* device_tree);
 
@@ -12,7 +15,7 @@ void init_interrupt_controller(const void* device_tree);
 void disable_interrupts();
 
 /*
- * Sets the MIE bit in mstatus, enabling interrupts
+ * Sets the MIE bit in mstatus, enabling interrupts.
  */
 void enable_interrupts();
 
