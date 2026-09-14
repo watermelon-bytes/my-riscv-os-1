@@ -1,3 +1,4 @@
+#include <drivers/power.h>
 #include <drivers/uart.h>
 #include <init_devices.h>
 #include <klibc/panic.h>
@@ -36,6 +37,7 @@ void kmain(int hardt_id, void* device_tree) {
     init_interrupt_controller(device_tree);
     detect_memory(device_tree);
     init_phys_allocator();
+    init_power_controller(device_tree);
     printf("[FINISHED] Nothing to do left: halting\n");
     /* WARNING: printf, which relies on uart_putchar, is called multiple times
      * before init_uart. Works in QEMU because I hardcoded the UART address, but
@@ -43,5 +45,5 @@ void kmain(int hardt_id, void* device_tree) {
      * messages will simply waste CPU cycles and potentially cause undefined
      * behavior. Maybe add a preprocessor directive to indicate whether or not
      * target machine is QEMU virt emulator? */
-    halt();
+    shutdown(0);
 }
