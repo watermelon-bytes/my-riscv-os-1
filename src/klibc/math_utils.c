@@ -8,7 +8,7 @@ struct div_t div(long a, long b) {
     };
 }
 
-long udiv_and_ceil(u_long a, u_long b) { return (a / b) + (a % b ? 1 : 0); }
+u_long udiv_and_ceil(u_long a, u_long b) { return (a / b) + (a % b ? 1 : 0); }
 
 struct div_t udiv_py_power_of_2(u_long a, uint power_of_two) {
     const u_long significant_bits = ULONG_MAX << power_of_two;
