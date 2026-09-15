@@ -1,6 +1,7 @@
 #include <klibc/bitmap.h>
 #include <klibc/bitwise_utils.h>
 #include <klibc/k_assert.h>
+#include <klibc/math_utils.h>
 #include <klibc/panic.h>
 #include <klibc/utils.h>
 #include <limits.h>
@@ -8,7 +9,10 @@
 #include <mem/phys_alloc.h>
 #include <string.h>
 #ifndef NDEBUG
-    #define LOG_VARIABLE(var, type) ({ printf(#var " = " type "\n", var); })
+    #define LOG_VARIABLE(var, type)            \
+        do {                                   \
+            printf(#var " = " type "\n", var); \
+        } while (0);
 #else
     #define LOG_VARIABLE(var, type) ;
 #endif
@@ -111,8 +115,7 @@ void init_phys_allocator() {
     LOG_VARIABLE(total_pages_available, "%u");
 
     // bitmap size = total pages count / bits in word
-    const size_t bitmap_size = total_pages_available / WORD_SIZE +
-                               (total_pages_available % WORD_SIZE ? 1 : 0);
+    const size_t bitmap_size = udiv_and_ceil(total_pages_available, WORD_SIZE);
     LOG_VARIABLE(bitmap_size, "%u");
 
     word_t *slots_for_bitmap = NULL,

@@ -16,6 +16,7 @@ typedef uintptr_t register_t;
 typedef uintptr_t reg_t;
 typedef uintptr_t word_t;
 typedef unsigned char u_char;
+typedef unsigned long u_long;
 
 #define WORD_MAX UINTPTR_MAX
 #define WORD_SIZE (__riscv_xlen)
