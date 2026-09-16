@@ -18,8 +18,8 @@ u_long udiv_and_ceil(u_long a, u_long b);
  * Should be used when you're not sure that compiler will not optimise the `div`
  * and `rem` instructions away in the `div(long, long)` function.
  *
- * @param a             The dividend.
- * @param power_of_two  The exponent of the power-of-two divisor; i.e., the
+ * @param a The dividend.
+ * @param power_of_two The exponent of the power-of-two divisor; i.e., the
  * divisor is 2^power_of_two.
  *
  * WARNING: `power_of_two` must not exceed the number of bits in `u_long`.

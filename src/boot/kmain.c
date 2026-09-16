@@ -39,7 +39,7 @@ void kmain(int hart_id, void* device_tree) {
         detect_memory(device_tree);
         init_phys_allocator();
         init_power_controller(device_tree);
-        printf("[FINISHED] Nothing to do left: halting\n");
+        printf("[FINISHED] Nothing to do left: shutting down now\n");
         /* WARNING: printf, which relies on uart_putchar, is called multiple
          * times before init_uart. Works in QEMU because I hardcoded the UART
          * address, but on other platforms, if UART isn't placed at 0x10000000,
