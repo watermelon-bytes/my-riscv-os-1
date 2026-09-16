@@ -24,14 +24,14 @@ const u32 NECESSARY_RISCV_EXTENSIONS = RISCV_OPTIONAL_ZBB |
     RISCV_EXT_USER_MODE | RISCV_EXT_MUL_DIV | RISCV_EXT_SUPERVISOR_MODE;
 // clang-format on
 
-void kmain(int hardt_id, void* device_tree) {
-    if (hardt_id == 0) {
+void kmain(int hart_id, void* device_tree) {
+    if (hart_id == 0) {
         disable_interrupts();
         printf("++++++++++++++++++++++++++++\n");
         // Will already panic if any extension missing
         ensure_extensions_present(NECESSARY_RISCV_EXTENSIONS);
         setup_interrupt_handler();
-        printf("[OK] Booting on on hardware thread %i\n", hardt_id);
+        printf("[OK] Booting on on hardware thread %i\n", hart_id);
         if (!check_device_tree(device_tree)) {
             KERNEL_PANIC("Invalid device tree was passed");
         }
