@@ -53,6 +53,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 set(QEMU_FLAGS
     -machine virt
     -bios none
+    -nographic
     -kernel $<TARGET_FILE:${PROJECT_NAME}>
 )
 
