@@ -8,14 +8,6 @@
 #include <mem/memory.h>
 #include <mem/phys_alloc.h>
 #include <string.h>
-#ifndef NDEBUG
-    #define LOG_VARIABLE(var, type)            \
-        do {                                   \
-            printf(#var " = " type "\n", var); \
-        } while (0);
-#else
-    #define LOG_VARIABLE(var, type) ;
-#endif
 
 static struct bitmap physical_bitmap_ = {.slots_ptr = NULL};
 
@@ -112,21 +104,15 @@ void init_phys_allocator() {
     // readability
     const __auto_type total_pages_available =
         get_total_mem() >> PAGE_OFFSET_BITS;
-    LOG_VARIABLE(total_pages_available, "%u");
 
     // bitmap size = total pages count / bits in word
     const size_t bitmap_size = udiv_and_ceil(total_pages_available, WORD_SIZE);
-    LOG_VARIABLE(bitmap_size, "%u");
 
     word_t *slots_for_bitmap = NULL,
            *kern_start = (word_t*)_kernel_physical_start,
            *kern_end = (word_t*)_kernel_physical_end;
 
-    LOG_VARIABLE(kern_start, "0x%p");
-    LOG_VARIABLE(kern_end, "0x%p");
-
     const size_t bitmap_size_in_bytes = bitmap_size * sizeof(word_t);
-    LOG_VARIABLE(bitmap_size_in_bytes, "%u");
 
     for (uint i = 0; i < total_memory_regions(); ++i) {
         const struct ram_descriptor region = pmm_get_region(i);
@@ -163,7 +149,7 @@ void init_phys_allocator() {
     printf("[OK] Initialized bitmap\n");
 }
 
-void* allocate_page() {
+void* pmm_allocate_page() {
     const int slot = bitmap_allocate_slot(&physical_bitmap_);
     if (slot == -1) {
         return NULL;

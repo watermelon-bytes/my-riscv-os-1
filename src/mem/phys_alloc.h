@@ -56,4 +56,4 @@ void init_phys_allocator();
 
 void free_physical_page(void*);
 
-void* allocate_page();
+void* pmm_allocate_page();
