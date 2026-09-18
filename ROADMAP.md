@@ -3,10 +3,10 @@
 ## Kernel space mandatory features that are not implemented yet
 
 ### Virtual Memory Management and Paging
-Without VMM, userspace is almost impossible (well, there are other techniques, but paging is the RISC-V-native implementation). The following functionality needs to be implemented:
-[ ] Utilities to create and remove Page Tables
-[ ] Kernel & user virtual memory map, e.g. kernel code `0x8000'0000`, user heap starting at `0x2000'0000`, etc.
-[ ] Virtual memory Allocator - requests a physical page from Physical Allocator, and on success, allocates a new virtual page in kernel/user address space, and maps it to the physical address obtained from Physical Allocator.
+Without VMM, userspace is almost impossible (well, there are other techniques, but paging is the RISC-V-native approach). The following functionality needs to be implemented:
+- [ ] Utilities to create and remove Page Tables
+- [ ] Kernel & user virtual memory map, e.g. kernel code `0x8000'0000`, user heap starting at `0x2000'0000`, etc.
+- [ ] Virtual memory Allocator - requests a physical page from Physical Allocator, and on success, allocates a new virtual page in kernel/user address space, and maps it to the physical address obtained from Physical Allocator.
 
 ### Interrupt handling 
 Interrupts are the key to communication between kernel and devices or between kernel and user processes.
@@ -15,6 +15,13 @@ Interrupts are the key to communication between kernel and devices or between ke
 The "switch button" between lowest and highest privileges of the hardware thread.
 
 ### Scheduler and `struct proc`
+
+`struct proc` should contain: 
+- Structure `context` capable of storing all general-purpose registers and a couple system registers (`pc`, `sp`, `ra`).
+- Per-process kernel stack pointer
+- Physical address of Page Tables, so that process' memory can be easily restored
+- Translation Lookaside Buffer entry index for this process' virtual address translations
+
 > [!TODO]
 > 
 
