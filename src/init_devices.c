@@ -26,11 +26,11 @@ _Bool check_device_tree(const void* devtree) {
     return true;
 }
 
+__attribute__((optimize("O3")))
 // @param cell_ptr: Pointer to the start of data location
 // @param cells_count: How many 32-bit pieces encode the value
 // @return Value represented in cell_ptr[cells_count], if it fits into machine
 // register, or UINTPTR_MAX otherwise
-SET_OPTIMIZATION_LVL(2)
 static uintptr_t fetch_lowest_(const u32* cell_ptr, uint cells_count) {
     const int register_width = sizeof(uintptr_t);
     if (register_width >= cells_count * sizeof(u32)) {

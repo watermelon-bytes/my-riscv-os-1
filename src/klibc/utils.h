@@ -26,20 +26,6 @@ void word_aligned_memset(register_t* p, const register_t num, size_t count);
         }                                  \
     })
 
-#pragma once
-#if defined(__GNUC__) || defined(__clang__)
-
-    #ifndef NDEBUG
-        #define SET_OPTIMIZATION_LVL(lvl)
-    #else
-        #define SET_OPTIMIZATION_LVL(lvl) __attribute__((optimize("O" #lvl)))
-    #endif
-
-#else
-    #define SET_OPTIMIZATION_LVL(lvl)
-//
-#endif
-
 #define countof(array) (sizeof(array) / sizeof(array[0]))
 #define BITS_COUNT(x) (sizeof(x) * CHAR_BIT)
 #define WORD_USIZE ((unsigned)__riscv_xlen)

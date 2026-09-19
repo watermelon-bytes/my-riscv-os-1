@@ -6,4 +6,6 @@ extern struct riscv_timer {
     reg_t* mtimecmp;
 } present_timer;
 
+// Sets time comparator to current time and adds the speicified in the first
+// parameter count of milliseconds
 void timer_sleep(uint cycles);

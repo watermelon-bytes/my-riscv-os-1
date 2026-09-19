@@ -1,10 +1,7 @@
 #include <klibc/utils.h>
 #include <riscv/timer.h>
 
-// Sets time comparator to current time and adds the speicified in the first
-// parameter count of milliseconds
-SET_OPTIMIZATION_LVL(3)
-void timer_sleep(uint cycles) {
+__attribute__((optimize("O3"))) void timer_sleep(uint cycles) {
 #if __riscv_xlen == 32
     // Assuming little endian
     volatile u32* mtime = (volatile u32*)present_timer.mtime;
