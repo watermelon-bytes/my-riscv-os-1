@@ -9,19 +9,8 @@ _Static_assert(
     sizeof(void*) == sizeof(uintptr_t),
     "Impossible error: sizeof(uintptr_t) != sizeof(void*)");  // who knows
 
-#ifndef NDEBUG
-    #include <klibc/printf.h>
-    #define LOG_CALL \
-        ({ printf("function %s was called\n", __PRETTY_FUNCTION__); })
-#else
-    #define LOG_CALL ;
-#endif
-// relying on __builtin_'s may look like a weakness
-// but it also may be a good time saving and code reusing
-
 SET_OPTIMIZATION_LVL(2)
 void* memcpy(void* __restrict dest, const void* __restrict src, size_t n) {
-    LOG_CALL;
     return __builtin_memcpy(dest, src, n);
 }
 
@@ -36,7 +25,6 @@ void* memset(void* s, int c, size_t n) {
 
 SET_OPTIMIZATION_LVL(2)
 void* memmove(void* dest, const void* src, size_t n) {
-    LOG_CALL;
     return __builtin_memmove(dest, src, n);
 }
 
@@ -102,26 +90,6 @@ size_t strlen(const char* s) {
             }
         }
         length += sizeof(reg_t);
-
-        // if ((chunk & (0xFFull)) == 0) {
-        //     return length;
-        // } else if ((chunk & (0xFFull << 8)) == 0) {
-        //     return length + 1;
-        // } else if ((chunk & (0xFFull << 16)) == 0) {
-        //     return length + 2;
-        // } else if ((chunk & (0xFFull << 24)) == 0) {
-        //     return length + 3;
-        // } else if ((chunk & (0xFFull << 32)) == 0) {
-        //     return length + 4;
-        // } else if ((chunk & (0xFFull << 40)) == 0) {
-        //     return length + 5;
-        // } else if ((chunk & (0xFFull << 48)) == 0) {
-        //     return length + 6;
-        // } else if ((chunk & (0xFFull << 56)) == 0) {
-        //     return length + 7;
-        // } else {
-        //     length += 8;
-        // }
     }
 }
 
@@ -165,5 +133,3 @@ void word_aligned_memset(register_t* p, const register_t num, size_t count) {
         *ptr++ = num;
     }
 }
-
-#undef LOG_CALL
