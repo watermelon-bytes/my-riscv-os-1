@@ -10,7 +10,7 @@
         })
     #define WRITE_CSR(reg, val)                                \
         ({                                                     \
-            uintptr_t _tmp = (val);                            \
+            const uintptr_t _tmp = (val);                      \
             __asm__ volatile("csrw " #reg ", %0" ::"r"(_tmp)); \
         })
 #else
