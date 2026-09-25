@@ -17,6 +17,7 @@ The "switch button" between lowest and highest privileges of the hardware thread
 ### Scheduler and `struct proc`
 
 `struct proc` should contain: 
+- Process state (running or sleeping) and ID
 - Structure `context` capable of storing all general-purpose registers and a couple system registers (`pc`, `sp`, `ra`).
 - Per-process kernel stack pointer
 - Physical address of Page Tables, so that process' memory can be easily restored
