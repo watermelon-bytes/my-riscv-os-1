@@ -1,7 +1,7 @@
 #include <klibc/utils.h>
 #include <riscv/timer.h>
 
-__attribute__((optimize("O3"))) void timer_sleep(uint cycles) {
+__attribute__((optimize("O3"))) void timer_sleep(const uint cycles) {
 #if __riscv_xlen == 32
     // Assuming little endian
     volatile u32* mtime = (volatile u32*)present_timer.mtime;
