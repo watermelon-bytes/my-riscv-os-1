@@ -1,6 +1,4 @@
-#include <klibc/panic.h>
 #include <klibc/types.h>
-#include <klibc/utils.h>
 #include <limits.h>
 #include <stdbool.h>
 #include <stdint.h>
