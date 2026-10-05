@@ -7,20 +7,20 @@
 #include <mem/memory.h>
 
 _Bool check_device_tree(const void* devtree) {
-    if (devtree == NULL) return false;
-
-    const int devicetree_passed = fdt_check_header(devtree);
-
-    if (devicetree_passed != 0) {
-        printf("[FATAL] No device tree was passed: %s \n",
-               fdt_strerror(devicetree_passed));
-        return false;
+    if (devtree == NULL) {
+        KERNEL_PANIC("Device tree was not passed.");
     }
 
-    const int err = fdt_check_full(devtree, fdt_totalsize(devtree));
-    if (err) {
-        printf("[FATAL] device tree turned out to be invalid\n");
-        return false;
+    const int devicetree_passed = fdt_check_header(devtree);
+    if (devicetree_passed != 0) {
+        KERNEL_PANIC("[FATAL] No device tree was passed: %s \n",
+                     fdt_strerror(devicetree_passed));
+    }
+
+    const int invalid_fdt = fdt_check_full(devtree, fdt_totalsize(devtree));
+    if (invalid_fdt) {
+        KERNEL_PANIC("[FATAL] Device tree turned out to be invalid: %s\n",
+                     fdt_strerror(invalid_fdt));
     }
     printf("[OK] Device tree verified\n");
     return true;

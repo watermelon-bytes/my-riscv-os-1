@@ -17,6 +17,7 @@
     #define RISCV_OPTIONAL_ZBB 0
 #endif
 
+void test();
 // This constant should be used to check extensions (consider moving to header
 // file?)
 // clang-format off
@@ -32,9 +33,7 @@ void kmain(int hart_id, void* device_tree) {
         ensure_extensions_present(NECESSARY_RISCV_EXTENSIONS);
         setup_interrupt_handler();
         printf("[OK] Booting on on hardware thread %i\n", hart_id);
-        if (!check_device_tree(device_tree)) {
-            KERNEL_PANIC("Invalid device tree was passed");
-        }
+        check_device_tree(device_tree);
         init_interrupt_controller(device_tree);
         detect_memory(device_tree);
         init_phys_allocator();
