@@ -7,8 +7,13 @@ _Static_assert(
     sizeof(void*) == sizeof(uintptr_t),
     "Impossible error: sizeof(uintptr_t) != sizeof(void*)");  // who knows
 
-void* memcpy(void* __restrict dest, const void* __restrict src, size_t n) {
-    return __builtin_memcpy(dest, src, n);
+void* memcpy(void* __restrict __dest, const void* __restrict __src, size_t n) {
+    char* const dst = (char*)__dest;
+    char* const src = (char*)__src;
+    for (size_t i = 0; i < n; ++i) {
+        dst[i] = src[i];
+    }
+    return __dest;
 }
 
 void* memset(void* s, int c, size_t n) {
