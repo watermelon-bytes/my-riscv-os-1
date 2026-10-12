@@ -28,5 +28,15 @@ u_long udiv_and_ceil(u_long a, u_long b);
 struct div_t udiv_py_power_of_2(u_long a, uint power_of_two);
 
 // Those are somewhat generic
-#define min(a, b) ((a) < (b) ? (a) : (b))
-#define max(a, b) (min((a), (b)) == a ? b : a)
+#define min(a, b)             \
+    ({                        \
+        __auto_type _a = (a); \
+        __auto_type _b = (b); \
+        a > b ? b : a;        \
+    })
+#define max(a, b)             \
+    ({                        \
+        __auto_type _a = (a); \
+        __auto_type _b = (b); \
+        a > b ? a : b;        \
+    })
