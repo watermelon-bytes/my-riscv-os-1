@@ -17,7 +17,11 @@
     #define RISCV_OPTIONAL_ZBB 0
 #endif
 
-void test();
+void test() {
+    printf("HELLO FROM SUPERVISOR MODE!!!\n");
+    asm volatile("unimp");
+    __builtin_unreachable();
+}
 // This constant should be used to check extensions (consider moving to header
 // file?)
 // clang-format off
@@ -38,6 +42,7 @@ void kmain(int hart_id, void* device_tree) {
         detect_memory(device_tree);
         init_phys_allocator();
         init_power_controller(device_tree);
+        riscv_switch_to_supervisor(&test);
         printf("[FINISHED] Nothing to do left: shutting down now\n");
         /* WARNING: printf, which relies on uart_putchar, is called multiple
          * times before init_uart. Works in QEMU because I hardcoded the UART

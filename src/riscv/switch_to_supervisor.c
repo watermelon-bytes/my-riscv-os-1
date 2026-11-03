@@ -30,9 +30,6 @@ void riscv_switch_to_supervisor(void* jump_addr) {
     #error "incorrect or unsupported __riscv_xlen"
 #endif
     WRITE_CSR(pmpcfg0, 0x0f);
-    // WRITE_CSR(pmpcfg0, (RISCV_PMPCFG_EXECUTABLE | RISCV_PMPCFG_LOCKED |
-    //           RISCV_PMPCFG_READABLE | RISCV_PMPCFG_WRITABLE |
-    //           RISCV_PMPCFG_ADDR_MODE_TOP));
     WRITE_CSR(satp, 0);
     asm volatile("sfence.vma x0, x0;");
 

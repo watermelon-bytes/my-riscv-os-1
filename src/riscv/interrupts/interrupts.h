@@ -60,7 +60,8 @@ union mstatus_64 {
     };
 };
 
-union mtrap_vector {
+/* mtvec / stvec structure */
+union riscv_trap_vector {
     register_t raw_value;
     struct {
         enum mtvec_mode_field : reg_t {
@@ -72,8 +73,14 @@ union mtrap_vector {
     void* base;
 };
 
-_Static_assert(sizeof(union mtrap_vector) == sizeof(register_t),
-               "Poorly formatted `mtvec` fields (in source file " __FILE_NAME__
-               ")\n");
+_Static_assert(sizeof(union riscv_trap_vector) == sizeof(register_t) &&
+                   sizeof(register_t) == sizeof(void*),
+               "Poorly formatted `mtvec` fields (" __FILE_NAME__ ")\n");
 
+/*
+ *
+ *
+ * NOTE: This function does not touch global interrupts state.
+ * Interrupts would better be disabled before calling this.
+ */
 void setup_interrupt_handler();
