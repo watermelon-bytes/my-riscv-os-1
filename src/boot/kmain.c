@@ -17,32 +17,23 @@
     #define RISCV_OPTIONAL_ZBB 0
 #endif
 
-void test() {
-    printf("HELLO FROM SUPERVISOR MODE!!!\n");
-    asm volatile("unimp");
-    __builtin_unreachable();
-}
-// This constant should be used to check extensions (consider moving to header
-// file?)
-// clang-format off
-const u32 NECESSARY_RISCV_EXTENSIONS = RISCV_OPTIONAL_ZBB |
-    RISCV_EXT_USER_MODE | RISCV_EXT_MUL_DIV | RISCV_EXT_SUPERVISOR_MODE;
-// clang-format on
+void* device_tree = NULL;
 
-void kmain(int hart_id, void* device_tree) {
+void kmain() {
+    int hart_id;
+    asm volatile("mv %0, tp" : "=r"(hart_id));
     if (hart_id == 0) {
         disable_interrupts();
-        printf("++++++++++++++++++++++++++++\n");
-        // Will already panic if any extension missing
-        ensure_extensions_present(NECESSARY_RISCV_EXTENSIONS);
-        setup_interrupt_handler();
-        printf("[OK] Booting on on hardware thread %i\n", hart_id);
+        printf("[OK] Successfully switched to Supervisor Mode%c\n", '!');
+        // Will already panic if any extension is missing
+        // setup_interrupt_handler();
+        printf("[OK] Booting on hardware thread %i\n", hart_id);
         check_device_tree(device_tree);
         init_interrupt_controller(device_tree);
         detect_memory(device_tree);
         init_phys_allocator();
         init_power_controller(device_tree);
-        riscv_switch_to_supervisor(&test);
+        stimer_sleep(10000);
         printf("[FINISHED] Nothing to do left: shutting down now\n");
         /* WARNING: printf, which relies on uart_putchar, is called multiple
          * times before init_uart. Works in QEMU because I hardcoded the UART
@@ -52,6 +43,51 @@ void kmain(int hart_id, void* device_tree) {
          * indicate whether or not target machine is QEMU virt emulator? */
         shutdown(0);
     } else {
+        printf("[thread %i] halting\n", hart_id);
         halt();
     }
+}
+
+#define MSTATUS_MPP_MASK (3L << 11)  // previous mode.
+#define MSTATUS_MPP_S (1L << 11)
+#define SIE_SEIE (1L << 9)  // external
+#define SIE_STIE (1L << 5)  // timer
+__attribute__((noreturn)) void early_start(int hart_id, void* t) {
+    device_tree = t;
+    asm volatile("mv tp, %0" ::"r"(hart_id) : "memory");
+    printf("++++++++++++++++++++++++++++\n");
+    ensure_extensions_present(RISCV_EXT_USER_MODE | RISCV_EXT_MUL_DIV |
+                              RISCV_EXT_SUPERVISOR_MODE);
+
+    u32 x = READ_CSR(mstatus);
+    x &= MSTATUS_MPP_MASK;
+    x |= MSTATUS_MPP_S;
+    WRITE_CSR(mstatus, x);
+
+    WRITE_CSR(mepc, (uintptr_t)&kmain);
+    WRITE_CSR(satp, 0);
+    WRITE_CSR(mideleg, UINTPTR_MAX);
+    WRITE_CSR(medeleg, UINTPTR_MAX);
+
+    WRITE_CSR(sie, READ_CSR(sie) | SIE_SEIE | SIE_STIE);
+
+    WRITE_CSR(pmpaddr0, WORD_MAX);
+    WRITE_CSR(pmpaddr1, WORD_MAX);
+    WRITE_CSR(pmpcfg0, 0xf);
+
+#define MENVCFGH_SSTC_EXTENSION (1u << 31)
+    WRITE_CSR(menvcfgh, READ_CSR(menvcfgh) | MENVCFGH_SSTC_EXTENSION);
+    if (READ_CSR(menvcfgh) & MENVCFGH_SSTC_EXTENSION) {
+        printf("[OK] SSTC extension enabled\n");
+    } else {
+        KERNEL_PANIC("SSTC extension missing\n");
+    }
+
+    // Give access to counters like `time`
+    WRITE_CSR(mcounteren, READ_CSR(mcounteren) | (1u << 1));
+
+    void s_mode_handle();
+    WRITE_CSR(stvec, (uintptr_t)&s_mode_handle);
+    asm volatile("mret");
+    __builtin_unreachable();
 }

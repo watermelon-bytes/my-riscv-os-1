@@ -7,7 +7,7 @@ _entry:
 	la gp, __global_pointer
     la sp, stack_top
     csrw satp, zero
-    call kmain
+    call early_start
 1:
     wfi
     j 1b

@@ -9,3 +9,5 @@ extern struct riscv_timer {
 // Sets time comparator to current time and adds the speicified in the first
 // parameter count of milliseconds
 void timer_sleep(const uint cycles);
+
+void stimer_sleep(const int cycles);
