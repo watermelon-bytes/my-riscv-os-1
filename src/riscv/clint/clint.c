@@ -35,7 +35,9 @@ static u64* clint_get_time() { return (u64*)(clint_addr + CLINT_MTIME_OFFSET); }
 // Returns mtimecmp for the current hart.
 static u64* clint_get_mtimecmp() {
     __auto_type mtimecmp_base = (u64*)(clint_addr + CLINT_MTIMECMP_OFFSET);
-    return &mtimecmp_base[READ_CSR(mhartid)];
+    int hart_id;
+    asm volatile("mv %0, tp" : "=r"(hart_id));
+    return &mtimecmp_base[hart_id];
 }
 
 struct riscv_timer clint_init_timer() {
