@@ -44,7 +44,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE
     -mcmodel=medany
     -ffreestanding
     -nostdlib
-    -march=rv32imacd_zicsr
+    -march=rv32imacd_zicsr_sstc
     -nostartfiles
     -mabi=ilp32d
     -flto
@@ -52,6 +52,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 
 set(QEMU_FLAGS
     -machine virt
+    -cpu rv32,sstc=true 
     -bios none
     -nographic
     -kernel $<TARGET_FILE:${PROJECT_NAME}>
