@@ -24,22 +24,6 @@ int init_devices(void* fdt);
 typedef int (*device_initializer_func)(const void* tree, int node);
 device_initializer_func get_device_initializer(const char* name);
 
-/**
- * WARNING: this function is unnecessary. Consider a removal.
- *
- * Reads and caches the `#address-cells` and `#size-cells` sizes from the
- * root node. Must be called exactly once before invoking any other parsing
- * functions that rely on cell sizes.
- *
- * @return 0 on success.
- * @return 1 if the configuration has already been initialized.
- * @return < 0 libfdt error code if an error occurs during lookup.
- *
- * TODO: Consider halting if called a second time to catch debugging issues
- * early.
- */
-int configure_field_size(void* fdt, int root);
-
 /*
  * @tree Pointer to device tree
  * @node Offset of the node containing the necessary <reg> field
