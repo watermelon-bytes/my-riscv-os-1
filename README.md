@@ -8,7 +8,7 @@ Doesn't require a SBI like OpenSBI, but the bootloader has to pass a valid Devic
 - RISC-V GNU C & C++ toolchain (grab it (here)[https://github.com/riscv-collab/riscv-gnu-toolchain])
 - CMake >=3.16
 
-To run in QEMU, ensure you have the `qemu-system-riscv32` emulator installed.
+To test the kernel in QEMU, ensure you have the `qemu-system-riscv32` emulator installed.
 
 ### Build with CMake
 
@@ -18,4 +18,7 @@ cmake -S . -B bin/
 cmake --build bin/ 
 ```
 
-
+To compile the kernel and run it in QEMU:
+```sh
+cmake --build bin/ --target qemu-run
+```
