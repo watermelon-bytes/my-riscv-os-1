@@ -10,7 +10,8 @@ extern void halt();
                         " evaluates to 'false'\n"                 \
                         "at %s: in function %s, line %d\n",       \
                         __FILE__, __PRETTY_FUNCTION__, __LINE__); \
-                halt();                                           \
+                extern void (*shutdown)(int);                     \
+                shutdown(0);                                      \
             }                                                     \
         })
 
@@ -18,7 +19,8 @@ extern void halt();
         ({                                        \
             if (!(condition)) {                   \
                 printf_(__VA_ARGS__);             \
-                halt();                           \
+                extern void (*shutdown)(int);     \
+                shutdown(0);                      \
             }                                     \
         })
 #else
