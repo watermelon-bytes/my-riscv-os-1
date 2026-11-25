@@ -49,9 +49,9 @@ void kmain() {
 }
 
 #define MSTATUS_MPP_MASK (3L << 11)  // previous mode.
-#define MSTATUS_MPP_S (1L << 11)
-#define SIE_SEIE (1L << 9)  // external
-#define SIE_STIE (1L << 5)  // timer
+#define MSTATUS_MPP_S (1L << 11)     // previous mode = Supervisor
+#define SIE_SEIE (1L << 9)           // external
+#define SIE_STIE (1L << 5)           // timer
 __attribute__((noreturn)) void early_start(int hart_id, void* t) {
     device_tree = t;
     asm volatile("mv tp, %0" ::"r"(hart_id) : "memory");
@@ -66,8 +66,9 @@ __attribute__((noreturn)) void early_start(int hart_id, void* t) {
 
     WRITE_CSR(mepc, (uintptr_t)&kmain);
     WRITE_CSR(satp, 0);
-    WRITE_CSR(mideleg, UINTPTR_MAX);
-    WRITE_CSR(medeleg, UINTPTR_MAX);
+    // TODO: maybe replace WORD_MAX with proper constants?
+    WRITE_CSR(mideleg, WORD_MAX);
+    WRITE_CSR(medeleg, WORD_MAX);
 
     WRITE_CSR(sie, READ_CSR(sie) | SIE_SEIE | SIE_STIE);
 
@@ -76,6 +77,7 @@ __attribute__((noreturn)) void early_start(int hart_id, void* t) {
     WRITE_CSR(pmpcfg0, 0xf);
 
 #define MENVCFGH_SSTC_EXTENSION (1u << 31)
+    // Enable the Sstc extension to access `stimecmp` from S-mode
     WRITE_CSR(menvcfgh, READ_CSR(menvcfgh) | MENVCFGH_SSTC_EXTENSION);
     if (READ_CSR(menvcfgh) & MENVCFGH_SSTC_EXTENSION) {
         printf("[OK] SSTC extension enabled\n");
@@ -86,7 +88,7 @@ __attribute__((noreturn)) void early_start(int hart_id, void* t) {
     // Give access to counters like `time`
     WRITE_CSR(mcounteren, READ_CSR(mcounteren) | (1u << 1));
 
-    void s_mode_handle();
+    extern void s_mode_handle();
     WRITE_CSR(stvec, (uintptr_t)&s_mode_handle);
     asm volatile("mret");
     __builtin_unreachable();
