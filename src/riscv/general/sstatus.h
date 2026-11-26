@@ -28,7 +28,7 @@ union sstatus {
         u32 sdt : 1;   /* SDT  (Ssdbltrp)                            */
         u32 : 6;       /* WPRI */
         u32 sd : 1;    /* SD   – any of FS/VS/XS dirty (RV32 only)   */
-    };
+    } __attribute__((packed));
 
 #if __riscv_xlen == 64
     struct {
@@ -53,6 +53,6 @@ union sstatus {
         u64 uxl : 2; /* UXL[1:0] – effective XLEN in U-mode        */
         u64 : 29;    /* WPRI */
         u64 sd : 1;  /* SD */
-    };
+    } __attribute__((packed));
 #endif
 };
