@@ -19,7 +19,7 @@ void disable_interrupts() {
 
 void enable_interrupts() {
     union sstatus sstatus;
-    sstatus.raw_value = READ_CSR(mstatus);
+    sstatus.raw_value = READ_CSR(sstatus);
     sstatus.sie = 1;
     WRITE_CSR(sip, 0);
     WRITE_CSR(sstatus, sstatus.raw_value);
@@ -66,21 +66,15 @@ void s_mode_handle() {
     printf("============================================\n");
     u32 failed_instruction = *(volatile u32*)epc;
     // if both lower 2 bits of the instruction are 1, the instruction is 4 bytes
-    // long
+    // long, otherwise it's 2 bytes long because of the Compressing extension
     uintptr_t next_instruction =
         epc + ((failed_instruction & 0b11) == 0b11 ? 4 : 2);
     WRITE_CSR(sepc, next_instruction);
     return;
-#ifndef NDEBUG
-    shutdown(1);
-#else
-    halt();
-#endif
-    __builtin_unreachable();
 }
 
 // TODO: Consider removing or rewriting this function as it is unnecessary now
-void setup_interrupt_handler() {
+__attribute__((deprecated)) void setup_interrupt_handler() {
     // TODO: remove hardcoded interrupt redirection.
     // i.e. don't set mideleg and medeleg to all zeroes, at least here in
     // `setup_interrupt_handler`. Now this temporary workaround is necessary
