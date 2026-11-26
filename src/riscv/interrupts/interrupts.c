@@ -5,10 +5,10 @@
 #include <klibc/utils.h>
 #include <riscv/clint/clint.h>
 #include <riscv/csr_operations.h>
+#include <riscv/general/sstatus.h>
 #include <riscv/interrupts/exception_codes.h>
 #include <riscv/interrupts/interrupt_sources.h>
 #include <riscv/interrupts/interrupts.h>
-#include <riscv/interrupts/sstatus.h>
 #include <riscv/timer.h>
 
 void disable_interrupts() {
@@ -64,7 +64,12 @@ void s_mode_handle() {
     printf("satp   = 0x%x\n", satp);
     printf("stvec  = 0x%x\n", READ_CSR(stvec));
     printf("============================================\n");
-    WRITE_CSR(sepc, epc + 4);
+    u32 failed_instruction = *(volatile u32*)epc;
+    // if both lower 2 bits of the instruction are 1, the instruction is 4 bytes
+    // long
+    uintptr_t next_instruction =
+        epc + ((failed_instruction & 0b11) == 0b11 ? 4 : 2);
+    WRITE_CSR(sepc, next_instruction);
     return;
 #ifndef NDEBUG
     shutdown(1);

@@ -17,7 +17,7 @@
     #define RISCV_OPTIONAL_ZBB 0
 #endif
 
-void* device_tree = NULL;
+static void* device_tree = NULL;
 
 void kmain() {
     int hart_id;
@@ -33,13 +33,16 @@ void kmain() {
         detect_memory(device_tree);
         init_phys_allocator();
         init_power_controller(device_tree);
-        stimer_sleep(10000);
+        // stimer_sleep(10000);
+        asm volatile("unimp;");
+        printf("RECOVERED FROM INTERRUPT SUCCESSFULLY\n");
         printf("[FINISHED] Nothing to do left: shutting down now\n");
         /* WARNING: printf, which relies on uart_putchar, is called multiple
          * times before init_uart. Works in QEMU because I hardcoded the UART
          * address, but on other platforms, if UART isn't placed at 0x10000000,
          * then debug messages will simply waste CPU cycles and potentially
-         * cause undefined behavior. Maybe add a preprocessor directive to
+         * cause undefined behavior.
+         * TODO: Maybe add a preprocessor directive to
          * indicate whether or not target machine is QEMU virt emulator? */
         shutdown(0);
     } else {
@@ -70,10 +73,13 @@ __attribute__((noreturn)) void early_start(int hart_id, void* t) {
     WRITE_CSR(mideleg, WORD_MAX);
     WRITE_CSR(medeleg, WORD_MAX);
 
+    // Enable Supervisor External Interrupts (SEIE) and Timer Interrupts (STIE)
     WRITE_CSR(sie, READ_CSR(sie) | SIE_SEIE | SIE_STIE);
 
     WRITE_CSR(pmpaddr0, WORD_MAX);
+#if __riscv_xlen == 32
     WRITE_CSR(pmpaddr1, WORD_MAX);
+#endif
     WRITE_CSR(pmpcfg0, 0xf);
 
 #define MENVCFGH_SSTC_EXTENSION (1u << 31)
@@ -88,8 +94,8 @@ __attribute__((noreturn)) void early_start(int hart_id, void* t) {
     // Give access to counters like `time`
     WRITE_CSR(mcounteren, READ_CSR(mcounteren) | (1u << 1));
 
-    extern void s_mode_handle();
-    WRITE_CSR(stvec, (uintptr_t)&s_mode_handle);
+    extern void trap_handler();
+    WRITE_CSR(stvec, (uintptr_t)&trap_handler);
     asm volatile("mret");
     __builtin_unreachable();
 }
