@@ -51,6 +51,7 @@ void kmain() {
     }
 }
 
+// TODO: Move these to a header
 #define MSTATUS_MPP_MASK (3L << 11)  // previous mode.
 #define MSTATUS_MPP_S (1L << 11)     // previous mode = Supervisor
 #define SIE_SEIE (1L << 9)           // external
@@ -68,7 +69,6 @@ __attribute__((noreturn)) void early_start(int hart_id, void* t) {
     WRITE_CSR(mstatus, x);
 
     WRITE_CSR(mepc, (uintptr_t)&kmain);
-    WRITE_CSR(satp, 0);
     // TODO: maybe replace WORD_MAX with proper constants?
     WRITE_CSR(mideleg, WORD_MAX);
     WRITE_CSR(medeleg, WORD_MAX);
