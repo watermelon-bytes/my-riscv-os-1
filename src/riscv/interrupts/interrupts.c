@@ -8,20 +8,21 @@
 #include <riscv/interrupts/exception_codes.h>
 #include <riscv/interrupts/interrupt_sources.h>
 #include <riscv/interrupts/interrupts.h>
+#include <riscv/interrupts/sstatus.h>
 #include <riscv/timer.h>
 
 void disable_interrupts() {
-    union mstatus_32 mstatus = {.raw_value_ = READ_CSR(mstatus)};
-    mstatus.machine_interrupt_enable = 0;
-    WRITE_CSR(mstatus, mstatus.raw_value_);
+    union sstatus sstatus = {.raw_value = READ_CSR(sstatus)};
+    sstatus.sie = 0;
+    WRITE_CSR(sstatus, sstatus.raw_value);
 }
 
 void enable_interrupts() {
-    union mstatus_32 mstatus;
-    mstatus.raw_value_ = READ_CSR(mstatus);
-    mstatus.machine_interrupt_enable = 1;
-    WRITE_CSR(mip, 0);
-    WRITE_CSR(mstatus, mstatus.raw_value_);
+    union sstatus sstatus;
+    sstatus.raw_value = READ_CSR(mstatus);
+    sstatus.sie = 1;
+    WRITE_CSR(sip, 0);
+    WRITE_CSR(sstatus, sstatus.raw_value);
 }
 
 __attribute__((aligned(4), noinline)) 
@@ -35,12 +36,12 @@ void m_mode_handle() {
                  satp = READ_CSR(satp);
 
     printf("\n========== TRAP ==========\n");
-    printf("mcause = 0x%x\n", cause);
-    printf("mepc   = 0x%x\n", epc);
-    printf("mtval  = 0x%x\n", tval);
-    printf("mstatus= 0x%x\n", status);
-    printf("satp   = 0x%x\n", satp);
-    printf("mtvec  = 0x%x\n", READ_CSR(mtvec));
+    printf("mcause  = 0x%x\n", cause);
+    printf("mepc    = 0x%x\n", epc);
+    printf("mtval   = 0x%x\n", tval);
+    printf("mstatus = 0x%x\n", status);
+    printf("satp    = 0x%x\n", satp);
+    printf("mtvec   = 0x%x\n", READ_CSR(mtvec));
     printf("==========================\n");
 #ifndef NDEBUG
     shutdown(1);
@@ -49,7 +50,7 @@ void m_mode_handle() {
 #endif
 }
 
-__attribute__((aligned(4), noinline, noreturn))  //
+__attribute__((aligned(4), noinline))  //
 void s_mode_handle() {
     const word_t cause = READ_CSR(scause), epc = READ_CSR(sepc),
                  tval = READ_CSR(stval), status = READ_CSR(sstatus),
@@ -63,6 +64,8 @@ void s_mode_handle() {
     printf("satp   = 0x%x\n", satp);
     printf("stvec  = 0x%x\n", READ_CSR(stvec));
     printf("============================================\n");
+    WRITE_CSR(sepc, epc + 4);
+    return;
 #ifndef NDEBUG
     shutdown(1);
 #else
@@ -71,6 +74,7 @@ void s_mode_handle() {
     __builtin_unreachable();
 }
 
+// TODO: Consider removing or rewriting this function as it is unnecessary now
 void setup_interrupt_handler() {
     // TODO: remove hardcoded interrupt redirection.
     // i.e. don't set mideleg and medeleg to all zeroes, at least here in
@@ -81,17 +85,17 @@ void setup_interrupt_handler() {
     // can't static_assert this, unfortunately
     DEBUG_ASSERT((uintptr_t)&m_mode_handle % 4 == 0);
 
-    union riscv_trap_vector mtvec = {.base = &m_mode_handle};
+    // union riscv_trap_vector mtvec = {.base = m_mode_handle};
     // Specify handler address
     // WRITE_CSR(mtvec, mtvec.raw_value);
     // WRITE_CSR(stvec, mtvec.raw_value);
-    // DEBUG_ASSERT(READ_CSR(mtvec) == (uintptr_t)&m_mode_handle);
+    DEBUG_ASSERT(READ_CSR(mtvec) == (uintptr_t)&m_mode_handle);
 
     // Allow all interrupts
-    // WRITE_CSR(mie, RISCV_ALL_INTR_SOURCES_ON);
-    // WRITE_CSR(mip, RISCV_ALL_INTR_SOURCES_ON);
-    WRITE_CSR(mie, 0);
-    WRITE_CSR(mip, 0);
+    WRITE_CSR(mie, RISCV_ALL_INTR_SOURCES_ON);
+    WRITE_CSR(mip, RISCV_ALL_INTR_SOURCES_ON);
+    // DEBUG_ASSERT(READ_CSR(mie) == RISCV_ALL_INTR_SOURCES_ON);
+    // DEBUG_ASSERT(READ_CSR(mip) == RISCV_ALL_INTR_SOURCES_ON);
     printf("[OK] Enabled all interrupts\n");
 }
 

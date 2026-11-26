@@ -19,68 +19,32 @@ void disable_interrupts();
  */
 void enable_interrupts();
 
-enum riscv_privileges {
-    RISCV_PRIV_LVL_USER,
-    RISCV_PRIV_LVL_SUPERVISOR,
-    RISCV_PRIV_LVL_MACHINE = 3
-};
-
-union mstatus_32 {
-    uintptr_t raw_value_;
-    __attribute__((packed)) struct {
-        u32 : 1;  // leave reserved fields unnamed
-        u32 supervisor_interrupt_enable : 1;
-        u32 : 1;
-        u32 machine_interrupt_enable : 1;
-        u32 user_prev_interrupt_enable : 1;
-        u32 supervisor_prev_interrupt_enable : 1;
-        u32 : 1;
-        u32 machine_prev_interrupt_enable : 1;
-        u32 supervisor_prev_privilege : 1;
-        u32 vector_state : 2;
-        u32 machine_prev_privilege : 2;
-        u32 floating_point_state : 2;
-        u32 extension_state : 2;
-        u32 modify_privilege : 1;
-        u32 supervisor_user_memory_access : 1;
-        u32 make_exec_readable : 1;
-        u32 trap_virtual_memory : 1;
-        u32 timeout_wfi_instr : 1;
-        u32 trap_sret : 1;
-    };
-};
-
-union mstatush_32 {};
-
-union mstatus_64 {
-    u64 raw_value;
-    struct {
-        union mstatus_32 lo;
-        union mstatush_32 hi;
-    };
-};
-
-/* mtvec / stvec structure */
+/* stvec / mtvec – identical layout */
 union riscv_trap_vector {
     register_t raw_value;
+
     struct {
-        enum mtvec_mode_field : reg_t {
-            MTVEC_MODE_DIRECT,
-            MTVEC_MODE_VECTORED
+        enum {
+            TRAP_VECTOR_MODE_DIRECT = 0,
+            TRAP_VECTOR_MODE_VECTORED = 1
+            /* ≥2 reserved */
         } mode : 2;
-        reg_t : 0;
+
+        /* BASE is [XLEN-1:2]; must be 4-byte aligned (stricter for vectored) */
+        reg_t base : (sizeof(reg_t) * 8 - 2);
     };
-    void* base;
+
+    /* Convenience: the whole register as a pointer (mode bits are low) */
+    void* base_ptr;
 };
 
 _Static_assert(sizeof(union riscv_trap_vector) == sizeof(register_t) &&
                    sizeof(register_t) == sizeof(void*),
-               "Poorly formatted `mtvec` fields (" __FILE_NAME__ ")\n");
+               "Poorly formatted `riscv_trap_vector` fields (" __FILE_NAME__
+               ")\n");
 
 /*
- *
- *
  * NOTE: This function does not touch global interrupts state.
- * Interrupts would better be disabled before calling this.
+ * Interrupts need to be disabled before calling this.
  */
 void setup_interrupt_handler();
