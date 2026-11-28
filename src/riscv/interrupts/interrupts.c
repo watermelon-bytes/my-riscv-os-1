@@ -105,19 +105,18 @@ __attribute__((deprecated)) void setup_interrupt_handler() {
     printf("[OK] Enabled all interrupts\n");
 }
 
-struct riscv_timer present_timer;
-
 void init_interrupt_controller(const void* device_tree) {
-    switch (discover_clint(device_tree)) {
-        case 0:
-            present_timer = clint_init_timer();
-            printf("[OK] Discovered CLINT\n");
-            printf("[INFO] mtimecmp at %p, mtime at %p\n",
-                   present_timer.mtimecmp, present_timer.mtime);
-            return;
-        case -2:
-            KERNEL_PANIC("CLINT node is present but not valid");
-        case -1:
-            KERNEL_PANIC("No CLINT node in Device Tree found");
-    }
+    (void)device_tree;
+    // switch (discover_clint(device_tree)) {
+    //     case 0:
+    //         present_timer = clint_init_timer();
+    //         printf("[OK] Discovered CLINT\n");
+    //         printf("[INFO] mtimecmp at %p, mtime at %p\n",
+    //                present_timer.mtimecmp, present_timer.mtime);
+    //         return;
+    //     case -2:
+    //         KERNEL_PANIC("CLINT node is present but not valid");
+    //     case -1:
+    //         KERNEL_PANIC("No CLINT node in Device Tree found");
+    // }
 }

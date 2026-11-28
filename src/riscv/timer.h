@@ -1,13 +1,6 @@
 #pragma once
 #include <klibc/types.h>
 
-extern struct riscv_timer {
-    reg_t* mtime;
-    reg_t* mtimecmp;
-} present_timer;
-
-// Sets time comparator to current time and adds the speicified in the first
-// parameter count of milliseconds
-void timer_sleep(const uint cycles);
-
-void stimer_sleep(const int cycles);
+/* Sets time comparator CSR to sum of the current time and the speicified in the
+ * first parameter count of milliseconds */
+void stimer_sleep(const uint cycles);
