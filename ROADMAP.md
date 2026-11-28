@@ -21,14 +21,14 @@ These pieces are present, but need continued integration and testing:
   intended kernel mode instead of shutting down after initialization.
 - [ ] Check Device Tree parsing and memory-map assumptions against the actual
   platform; reject malformed or unsupported layouts with useful diagnostics.
-- [ ] Define which hart performs global initialization and how other harts are
+- [x] Define which hart performs global initialization and how other harts are
   parked or brought online. Keep shared initialization from running twice.
 - [ ] Add a repeatable QEMU smoke test that checks boot reaches a known
   milestone and reports failures.
 
 ## 2. Finish traps and interrupt handling
 
-- [ ] Add assembly trap entry/return paths that preserve the interrupted
+- [x] Add assembly trap entry/return paths that preserve the interrupted
   register state before calling C handlers.
 - [ ] Decode synchronous exceptions and interrupts, dispatch by cause, and
   return from recoverable traps; keep fatal traps informative.
