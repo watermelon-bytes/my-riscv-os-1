@@ -13,6 +13,10 @@
             const uintptr_t _tmp = (val);                      \
             __asm__ volatile("csrw " #reg ", %0" ::"r"(_tmp)); \
         })
+    #define CSR_SET_BIT(csr, bit_no) \
+        ({__asm__ volatile("csrs " $csr ", " $bit_no ";")})
+    #define CSR_CLEAR_BIT(csr, bit_no) \
+        ({__asm__ volatile("csrc " #csr ", " #bit_no ";")})
 #else
     #error "Compilers other than GCC and Clang are not supported yet"
 #endif
