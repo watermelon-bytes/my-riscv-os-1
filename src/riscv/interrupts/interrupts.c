@@ -3,7 +3,6 @@
 #include <klibc/k_assert.h>
 #include <klibc/panic.h>
 #include <klibc/utils.h>
-#include <riscv/clint/clint.h>
 #include <riscv/csr_operations.h>
 #include <riscv/general/sie.h>
 #include <riscv/general/sstatus.h>
