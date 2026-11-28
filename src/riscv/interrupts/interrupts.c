@@ -5,6 +5,7 @@
 #include <klibc/utils.h>
 #include <riscv/clint/clint.h>
 #include <riscv/csr_operations.h>
+#include <riscv/general/sie.h>
 #include <riscv/general/sstatus.h>
 #include <riscv/interrupts/exception_codes.h>
 #include <riscv/interrupts/interrupt_sources.h>
@@ -12,17 +13,22 @@
 #include <riscv/timer.h>
 
 void disable_interrupts() {
-    union sstatus sstatus = {.raw_value = READ_CSR(sstatus)};
-    sstatus.sie = 0;
-    WRITE_CSR(sstatus, sstatus.raw_value);
+    WRITE_CSR(sstatus, READ_CSR(sstatus) & ~RISCV_SSTATUS_SIE);
 }
 
 void enable_interrupts() {
-    union sstatus sstatus;
-    sstatus.raw_value = READ_CSR(sstatus);
-    sstatus.sie = 1;
+    // enable software & external & timer interrupts
+    const __auto_type tmp = RISCV_SIE_SEIE | RISCV_SIE_STIE | RISCV_SIE_SSIE;
+    WRITE_CSR(sie, tmp);
+#if __riscv_xlen == 32
+    WRITE_CSR(stimecmp, UINT32_MAX);
+    WRITE_CSR(stimecmph, UINT32_MAX);
+#elif __riscv_xlen == 64
+    WRITE_CSR(stimecmp, UINT64_MAX);
+#endif
     WRITE_CSR(sip, 0);
-    WRITE_CSR(sstatus, sstatus.raw_value);
+    WRITE_CSR(sstatus, READ_CSR(sstatus) | RISCV_SSTATUS_SIE);
+    return;
 }
 
 __attribute__((aligned(4), noinline)) 
@@ -50,7 +56,8 @@ void m_mode_handle() {
 #endif
 }
 
-__attribute__((aligned(4), noinline))  //
+__attribute__((aligned(4), noinline))  
+/* Temporary S-mode handler */
 void s_mode_handle() {
     const word_t cause = READ_CSR(scause), epc = READ_CSR(sepc),
                  tval = READ_CSR(stval), status = READ_CSR(sstatus),
@@ -64,12 +71,12 @@ void s_mode_handle() {
     printf("satp   = 0x%x\n", satp);
     printf("stvec  = 0x%x\n", READ_CSR(stvec));
     printf("============================================\n");
-    u32 failed_instruction = *(volatile u32*)epc;
-    // if both lower 2 bits of the instruction are 1, the instruction is 4 bytes
-    // long, otherwise it's 2 bytes long because of the Compressing extension
-    uintptr_t next_instruction =
-        epc + ((failed_instruction & 0b11) == 0b11 ? 4 : 2);
-    WRITE_CSR(sepc, next_instruction);
+    // u32 failed_instruction = *(volatile u32*)epc;
+    /* if both lower 2 bits of the instruction are 1, the instruction is 4 bytes
+     long, otherwise it's 2 bytes long because of the Compressing extension */
+    // uintptr_t next_instruction =
+    //     epc + ((failed_instruction & 0b11) == 0b11 ? 4 : 2);
+    // WRITE_CSR(sepc, next_instruction);
     return;
 }
 
