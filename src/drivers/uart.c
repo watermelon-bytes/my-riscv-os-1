@@ -32,8 +32,8 @@ int init_uart(const void* fdt) {
     const int uart_node = RETURN_IF_LESS_THAN_ZERO(
         fdt_node_offset_by_compatible(fdt, -1, "ns16550a"));
     size_t size;
-    parse_reg(fdt, uart_node, (uintptr_t*)&uart_base, &size);
+    fdt_parse_reg(fdt, uart_node, (uintptr_t*)&uart_base, &size);
     printf("[OK] Found UART: starts at 0x%x, size = %i\n", uart_base, size);
-    return 0;
 #endif /* ifndef QEMU_VIRT */
+    return 0;
 }

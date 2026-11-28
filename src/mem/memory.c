@@ -36,8 +36,8 @@ int extract_ram_region_info(const void* device_tree, int node_offset) {
         return -1;
     }
     struct ram_descriptor* buf = &ram_regions[ram_regions_index++];
-    const __auto_type res =
-        parse_reg(device_tree, node_offset, &buf->physicaddr, &buf->space_size);
+    const __auto_type res = fdt_parse_reg(device_tree, node_offset,
+                                          &buf->physicaddr, &buf->space_size);
     DEBUG_ASSERT(buf->space_size != 0);
     return res;
 }

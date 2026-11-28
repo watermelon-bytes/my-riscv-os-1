@@ -30,8 +30,8 @@ device_initializer_func get_device_initializer(const char* name);
  * @begin_buf Pointer to buffer where start address will be stored
  * @size_buf Pointer to buffer where size will be stored
  */
-enum parsing_error parse_reg(const void* tree, const int node,
-                             uintptr_t* begin_buf, size_t* size_buf);
+enum parsing_error fdt_parse_reg(const void* tree, const int node,
+                                 uintptr_t* begin_buf, size_t* size_buf);
 
 int get_sizeof_one_descriptor();
 

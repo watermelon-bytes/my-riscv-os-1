@@ -50,8 +50,8 @@ static uintptr_t fetch_lowest_(const u32* cell_ptr, uint cells_count) {
 // TODO: Now returns CALL_AGAIN if there are more than one pair of address and
 // size, but doesn't handle the case where caller needs the next values (returns
 // just the same)
-enum parsing_error parse_reg(const void* tree, const int node,
-                             uintptr_t* begin_addr_buf, size_t* size_buf) {
+enum parsing_error fdt_parse_reg(const void* tree, const int node,
+                                 uintptr_t* begin_addr_buf, size_t* size_buf) {
     int len;
     const u32* reg = fdt_getprop(tree, node, "reg", &len);
     if (len < 0) return len;
